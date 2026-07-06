@@ -1,10 +1,14 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 const config = require('./config/env');
 const logger = require('./utils/logger');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
+const { attachCurrentUser } = require('./middlewares/verifyJwt');
+const webAuthRoutes = require('./routes/web/authRoutes');
+const apiAuthRoutes = require('./routes/api/authRoutes');
 
 const app = express();
 
@@ -12,9 +16,10 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// ---- Body parsing & static assets ----
+// ---- Body parsing, cookies & static assets ----
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---- HTTP request logging (Morgan -> Winston) ----
@@ -24,11 +29,20 @@ app.use(
   })
 );
 
+// Populates res.locals.currentUser on every request (or null) so views like
+// partials/header.ejs can render a signed-in nav without every route having
+// to enforce authentication. Does not block unauthenticated requests —
+// routes that must be protected use verifyJwt individually.
+app.use(attachCurrentUser);
+
 // Temporary landing route — replaced by the proper MVC routing structure
 // (src/routes) once Event Management and later modules are implemented.
 app.get('/', (req, res) => {
   res.render('pages/index', { env: config.nodeEnv });
 });
+
+app.use('/', webAuthRoutes);
+app.use('/api/v1', apiAuthRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

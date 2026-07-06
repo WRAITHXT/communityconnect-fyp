@@ -1,0 +1,34 @@
+<%- include('../../partials/header', { title: 'Register - CommunityConnect' }) %>
+
+<main class="auth-page">
+  <h1>Create an Account</h1>
+
+  <% if (typeof errors !== 'undefined' && errors.length) { %>
+  <ul class="form-errors">
+    <% errors.forEach(function (message) { %>
+    <li><%= message %></li>
+    <% }); %>
+  </ul>
+  <% } %>
+
+  <form method="POST" action="/register" novalidate>
+    <label for="name">Full name</label>
+    <input type="text" id="name" name="name" value="<%= values.name || '' %>" required />
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= values.email || '' %>" required />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required minlength="8" />
+    <small>At least 8 characters, with an uppercase letter, a lowercase letter, and a number.</small>
+
+    <label for="confirmPassword">Confirm password</label>
+    <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" />
+
+    <button type="submit">Register</button>
+  </form>
+
+  <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+</main>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,27 @@
+<%- include('../../partials/header', { title: 'Log In - CommunityConnect' }) %>
+
+<main class="auth-page">
+  <h1>Log In</h1>
+
+  <% if (typeof errors !== 'undefined' && errors.length) { %>
+  <ul class="form-errors">
+    <% errors.forEach(function (message) { %>
+    <li><%= message %></li>
+    <% }); %>
+  </ul>
+  <% } %>
+
+  <form method="POST" action="/login" novalidate>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= values.email || '' %>" required />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required />
+
+    <button type="submit">Log In</button>
+  </form>
+
+  <p class="auth-switch">Don't have an account? <a href="/register">Register</a></p>
+</main>
+
+<%- include('../../partials/footer') %>

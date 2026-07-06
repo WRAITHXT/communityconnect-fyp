@@ -17,7 +17,7 @@ body {
 
 .hero,
 .error-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 65px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,4 +35,107 @@ body {
 .hint {
   color: #94a3b8;
   font-size: 0.9rem;
+}
+
+.site-nav {
+  min-height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+.site-nav .brand {
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.site-nav nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.site-nav a {
+  color: #93c5fd;
+  text-decoration: none;
+}
+
+.inline-logout {
+  display: inline;
+}
+
+.auth-page {
+  min-height: calc(100vh - 65px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.auth-page label {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.auth-page input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #334155;
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.auth-page small {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.auth-page button {
+  margin-top: 0.5rem;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #2563eb;
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.auth-page button:hover {
+  background-color: #1d4ed8;
+}
+
+.auth-switch {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.form-errors {
+  width: 100%;
+  max-width: 320px;
+  background-color: #450a0a;
+  border: 1px solid #7f1d1d;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+  color: #fecaca;
+  font-size: 0.9rem;
+}
+
+.profile-details {
+  list-style: none;
+  margin-bottom: 1rem;
+  text-align: left;
 }

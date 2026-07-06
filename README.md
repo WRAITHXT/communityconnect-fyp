@@ -4,8 +4,9 @@ Cloud-Based Integrated Platform for Enhancing Community Event, Volunteer and Don
 
 Full architecture, feature scope, roles, roadmap, and security design: [docs/PROJECT_BLUEPRINT.md](docs/PROJECT_BLUEPRINT.md).
 Database schema details: [docs/PHASE1_DATABASE.md](docs/PHASE1_DATABASE.md) and [docs/ERD.md](docs/ERD.md).
+Authentication details and how to test it: [docs/PHASE2_AUTHENTICATION.md](docs/PHASE2_AUTHENTICATION.md).
 
-**Status**: Phase 1 — database schema designed, migrated, and seeded. No authentication, models, controllers, services, routes, or business features are implemented yet.
+**Status**: Phase 2 — Authentication implemented (registration, login, logout, JWT-in-httpOnly-cookie, RBAC). Event Management, Volunteer Registration, Attendance, Donations, Certificates, Notifications, Reports, and the real User/Admin Dashboards are not implemented yet.
 
 ## Stack
 
@@ -46,20 +47,21 @@ commands.
 
 ```
 src/
-  config/        # env.js, db.js (pg Pool), jwt.js*, constants.js*
-  models/        # data access — parameterized SQL via pg, no ORM (empty until Database Design phase)
-  services/       # business logic (empty until each feature module is built)
+  config/        # env.js, db.js (pg Pool), jwt.js (active), constants.js*
+  models/        # userModel.js (active); more models arrive with each future feature module
+  services/       # authService.js (active); more services arrive with each future feature module
   controllers/
-    web/           # renders EJS views
-    api/            # returns JSON (/api/v1)
+    web/           # authController.js (active) — renders EJS views
+    api/            # authController.js (active, admin ping only) — returns JSON (/api/v1)
   routes/
-    web/
-    api/
-  middlewares/     # errorHandler.js (active); verifyJwt/requireRole/validate/upload/csrf are placeholders*
-  validators/       # request validation schemas (empty until routes exist)
-  views/            # EJS templates (layouts, partials, pages/<feature>)
+    web/            # authRoutes.js (active)
+    api/             # authRoutes.js (active)
+  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js (all active);
+                     upload.js/csrf.js are still placeholders*
+  validators/       # authValidators.js (active)
+  views/            # EJS templates (layouts, partials, pages/auth (active), pages/<other features>)
   public/            # static assets (css, client-side js, images)
-  utils/              # logger.js (active); storage/mailer/pdfGenerator/csvExporter/tokenService are placeholders*
+  utils/              # logger.js, tokenService.js (active); storage/mailer/pdfGenerator/csvExporter are placeholders*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
   migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger function
@@ -70,7 +72,8 @@ docs/
   PROJECT_BLUEPRINT.md    # architecture, features, roles, roadmap, security
   PHASE1_DATABASE.md       # table/relationship/constraint explanations, run & seed instructions
   ERD.md                    # entity-relationship diagram (Mermaid)
-  API.md                     # filled in as API routes are built
+  PHASE2_AUTHENTICATION.md  # what was built, how JWT/RBAC work, full test instructions
+  API.md                     # filled in as more API routes are built
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -94,6 +97,22 @@ docs/
 - Seed script for the Phase 1 baseline data (`database/seeders/001-initial-seed.js`)
 - Verified end-to-end against a live local PostgreSQL 18 database, including a rollback/re-apply test
 
+**Phase 2 — Authentication**
+
+- Registration, login, logout; passwords hashed with bcrypt
+- JWT access tokens (2h expiry) in an `httpOnly`/`sameSite=strict` cookie; revocable via a
+  `token_version` check against the live database (see `docs/PHASE2_AUTHENTICATION.md`)
+- `verifyJwt` (strict) and `attachCurrentUser` (soft, sitewide) middleware; `requireRole` for RBAC
+- Input validation (`express-validator`) with forms that redisplay errors without losing input
+- `/profile` and `/api/v1/admin/ping` as temporary, explicitly-labeled routes proving the
+  middleware works — not the real User/Admin Dashboards
+- Verified end-to-end with `curl`: registration, duplicate-email/weak-password/mismatched-password
+  validation, login (including the no-enumeration generic error), logout, protected-route
+  redirects, RBAC (403/401), tampered/malformed/expired JWT rejection, and live revocation via
+  `token_version` and account suspension
+
 ## Explicitly Not Yet Implemented
 
-Authentication/JWT, models, controllers, services, routes, and all business features (events, volunteering, attendance, donations, certificates, notifications, reports). These follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Authentication next.
+Event Management, Volunteer Registration, Attendance Tracking, Donation Recording, Certificate
+Generation, Notifications, Reports, and the real User/Admin Dashboards. These follow the phased
+roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Event Management next.

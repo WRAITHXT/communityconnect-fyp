@@ -1,0 +1,22 @@
+<%- include('../../partials/header', { title: 'Profile - CommunityConnect' }) %>
+
+<main class="auth-page">
+  <h1>You are logged in</h1>
+
+  <ul class="profile-details">
+    <li><strong>Name:</strong> <%= user.name %></li>
+    <li><strong>Email:</strong> <%= user.email %></li>
+    <li><strong>Role:</strong> <%= user.role %></li>
+  </ul>
+
+  <form method="POST" action="/logout">
+    <button type="submit">Log Out</button>
+  </form>
+
+  <p class="hint">
+    This is a temporary Authentication-phase page used to verify the JWT middleware — it will be
+    replaced by the real User Dashboard / Admin Dashboard modules in a later phase.
+  </p>
+</main>
+
+<%- include('../../partials/footer') %>
