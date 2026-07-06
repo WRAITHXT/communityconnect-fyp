@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/public/**/*.js"],
+      "env": { "browser": true, "node": false }
+    }
+  ]
+}
