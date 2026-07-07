@@ -1,0 +1,76 @@
+<div class="page-header">
+  <h1>Record a Donation</h1>
+  <p>Log a donation you've made &mdash; an admin will confirm it once received.</p>
+</div>
+
+<% if (errors && errors.length) { %>
+<div class="alert alert-danger">
+  <i class="fa-solid fa-circle-exclamation"></i>
+  <ul>
+    <% errors.forEach(function (message) { %>
+    <li><%= message %></li>
+    <% }); %>
+  </ul>
+</div>
+<% } %>
+
+<div class="card">
+  <form method="POST" action="/donations" novalidate>
+    <div class="form-group">
+      <label class="form-label" for="donationType">Donation Type</label>
+      <select class="form-control" id="donationType" name="donationType" required>
+        <option value="">Select a type&hellip;</option>
+        <option value="monetary" <%= values.donationType==='monetary' ? 'selected' : '' %>>
+          Monetary Donation
+        </option>
+        <option value="food" <%= values.donationType==='food' ? 'selected' : '' %>>
+          Food Donation
+        </option>
+        <option value="clothing" <%= values.donationType==='clothing' ? 'selected' : '' %>>
+          Clothing Donation
+        </option>
+        <option value="medical_supplies" <%= values.donationType==='medical_supplies' ? 'selected' : '' %>>
+          Medical Supplies
+        </option>
+        <option value="other" <%= values.donationType==='other' ? 'selected' : '' %>>Other</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="amount">Amount</label>
+        <input
+          class="form-control"
+          type="number"
+          step="0.01"
+          min="0.01"
+          id="amount"
+          name="amount"
+          value="<%= values.amount || '' %>"
+        />
+        <span class="form-hint" id="amountHint">Required for monetary donations.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="donatedAt">Donation Date</label>
+        <input
+          class="form-control"
+          type="date"
+          id="donatedAt"
+          name="donatedAt"
+          value="<%= values.donatedAt || '' %>"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="4" required><%= values.description || '' %></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Record Donation</button>
+      <a href="/my-donations" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>

@@ -77,10 +77,34 @@ function initConfirmForms() {
   });
 }
 
+// Donation form: amount is only truly required for a Monetary donation
+// (the server enforces this regardless — see donationService — this just
+// gives the visitor a live signal instead of only finding out on submit).
+function initDonationTypeToggle() {
+  var typeSelect = document.getElementById('donationType');
+  var amountInput = document.getElementById('amount');
+  var amountHint = document.getElementById('amountHint');
+  if (!typeSelect || !amountInput) return;
+
+  function update() {
+    if (typeSelect.value === 'monetary') {
+      amountInput.setAttribute('required', 'required');
+      if (amountHint) amountHint.textContent = 'Required for monetary donations.';
+    } else {
+      amountInput.removeAttribute('required');
+      if (amountHint) amountHint.textContent = 'Optional for non-monetary donations.';
+    }
+  }
+
+  typeSelect.addEventListener('change', update);
+  update();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   initSidebarCollapse();
   initMobileSidebar();
   initUserMenu();
   initGreeting();
   initConfirmForms();
+  initDonationTypeToggle();
 });

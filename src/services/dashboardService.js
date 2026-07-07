@@ -2,6 +2,7 @@ const userModel = require('../models/userModel');
 const eventModel = require('../models/eventModel');
 const registrationModel = require('../models/registrationModel');
 const attendanceModel = require('../models/attendanceModel');
+const donationModel = require('../models/donationModel');
 
 // Icons match the sidebar entries in src/config/navigation.js for the same
 // concept, so the two stay visually tied together. Cards/stats tied to a
@@ -9,15 +10,10 @@ const attendanceModel = require('../models/attendanceModel');
 // (value: '—', status: 'Coming soon') until that module lands — see
 // docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order. "Upcoming
 // Events" (user), "Total Events" (admin) since Phase 4, "My Event
-// Registrations" (user) / "Total Volunteers" (admin) since Phase 5, and "My
-// Volunteer Hours" (user) since Phase 6 are now live.
+// Registrations" (user) / "Total Volunteers" (admin) since Phase 5, "My
+// Volunteer Hours" (user) since Phase 6, and "My Donations" (user) /
+// "Total Donations" (admin) since Phase 7 are now live.
 const USER_DASHBOARD_CARDS = [
-  {
-    key: 'myDonations',
-    title: 'My Donations',
-    description: 'View your recorded donation history.',
-    icon: 'fa-solid fa-hand-holding-heart',
-  },
   {
     key: 'myCertificates',
     title: 'My Certificates',
@@ -36,6 +32,7 @@ async function getUserDashboardCards(userId) {
   const upcomingEventsCount = await eventModel.countUpcomingPublished();
   const myRegistrationsCount = await registrationModel.countApprovedForUser(userId);
   const totalHours = await attendanceModel.getTotalHoursForUser(userId);
+  const totalDonated = await donationModel.getTotalForUser(userId);
 
   const liveCards = [
     {
@@ -65,6 +62,15 @@ async function getUserDashboardCards(userId) {
       status: null,
       href: '/my-attendance',
     },
+    {
+      key: 'myDonations',
+      title: 'My Donations',
+      description: 'View your recorded donation history.',
+      icon: 'fa-solid fa-hand-holding-heart',
+      value: totalDonated.toFixed(2),
+      status: null,
+      href: '/my-donations',
+    },
   ];
 
   const placeholderCards = USER_DASHBOARD_CARDS.map((card) => ({
@@ -77,13 +83,15 @@ async function getUserDashboardCards(userId) {
   return [...liveCards, ...placeholderCards];
 }
 
-// Total Users, Total Events, and Total Volunteers are real (Authentication,
-// Event Management, and Volunteer Registration are all implemented). The
-// rest stay placeholders until their respective modules are implemented.
+// Total Users, Total Events, Total Volunteers, and Total Donations are all
+// real now (Authentication, Event Management, Volunteer Registration, and
+// Donation Management are implemented). Only Total Certificates remains a
+// placeholder.
 async function getAdminStats() {
   const totalUsers = await userModel.countUsers();
   const totalEvents = await eventModel.countAll();
   const totalVolunteers = await registrationModel.countDistinctActiveVolunteers();
+  const totalDonations = await donationModel.countAll();
 
   return [
     {
@@ -110,8 +118,8 @@ async function getAdminStats() {
     {
       key: 'totalDonations',
       label: 'Total Donations',
-      value: '—',
-      isLive: false,
+      value: totalDonations,
+      isLive: true,
       icon: 'fa-solid fa-hand-holding-heart',
     },
     {
@@ -124,10 +132,13 @@ async function getAdminStats() {
   ];
 }
 
-// "Create Event" is real (Event Management is implemented). The rest
-// remain disabled until their modules exist. "Manage Registrations" stays
-// disabled since there's no global cross-event registrations page (see
-// config/navigation.js) — only the per-event view under Manage Events.
+// "Create Event" and "Manage Donations" are real (their modules are
+// implemented). "Manage Registrations" stays disabled since there's no
+// global cross-event registrations page (see config/navigation.js) — only
+// the per-event view under Manage Events. Note: donations are always
+// donor-submitted in this design (see docs/PHASE7_DONATION_MANAGEMENT.md)
+// — there is no admin "create donation" action, only manage/edit/delete,
+// so this quick action points at the donations list, not a create form.
 function getAdminQuickActions() {
   return [
     {
@@ -143,10 +154,10 @@ function getAdminQuickActions() {
       href: null,
     },
     {
-      key: 'recordDonation',
-      label: 'Record Donation',
+      key: 'manageDonations',
+      label: 'Manage Donations',
       icon: 'fa-solid fa-hand-holding-heart',
-      href: null,
+      href: '/admin/donations',
     },
     {
       key: 'generateCertificate',

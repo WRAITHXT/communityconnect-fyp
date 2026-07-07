@@ -9,8 +9,9 @@ Dashboard module details and how to test it: [docs/PHASE3_DASHBOARD.md](docs/PHA
 Event Management details and how to test it: [docs/PHASE4_EVENT_MANAGEMENT.md](docs/PHASE4_EVENT_MANAGEMENT.md).
 Volunteer Registration details and how to test it: [docs/PHASE5_VOLUNTEER_REGISTRATION.md](docs/PHASE5_VOLUNTEER_REGISTRATION.md).
 Attendance Tracking details and how to test it: [docs/PHASE6_ATTENDANCE_TRACKING.md](docs/PHASE6_ATTENDANCE_TRACKING.md).
+Donation Management details and how to test it: [docs/PHASE7_DONATION_MANAGEMENT.md](docs/PHASE7_DONATION_MANAGEMENT.md).
 
-**Status**: Phase 6 — Attendance Tracking implemented (check-in/out, mark present/absent, automatic hour calculation, admin corrections, attendance statistics, colored status badges). Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
+**Status**: Phase 7 — Donation Management implemented (record/history/detail, admin search/filter/edit/delete, statistics, summary by type, colored status badges). Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -51,33 +52,38 @@ commands.
 ```
 src/
   config/        # env.js, db.js (pg Pool), jwt.js, navigation.js (sidebar nav data, active), constants.js*
-  models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js, attendanceModel.js (active)
-  services/       # authService.js, dashboardService.js, eventService.js, registrationService.js, attendanceService.js (active)
+  models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js, attendanceModel.js,
+                   donationModel.js (active)
+  services/       # authService.js, dashboardService.js, eventService.js, registrationService.js,
+                    attendanceService.js, donationService.js (active)
   controllers/
-    web/           # auth/dashboard/event/adminEvent/registration/adminRegistration/attendance/adminAttendance controllers
+    web/           # auth/dashboard/event/adminEvent/registration/adminRegistration/attendance/adminAttendance/
+                     donation/adminDonation controllers
     api/            # empty — no active API routes right now*
   routes/
-    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js, attendanceRoutes.js
+    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js,
+                      attendanceRoutes.js, donationRoutes.js, adminDonationRoutes.js
     api/             # empty*
   middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js (all active);
                      csrf.js is still a placeholder*
-  validators/       # authValidators.js, eventValidators.js (active)
+  validators/       # authValidators.js, eventValidators.js, donationValidators.js (active)
   views/
     layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
     partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs, flashMessage.ejs,
-                        registrationStatusBadge.ejs, attendanceStatusBadge.ejs, dashboard/statCard.ejs,
-                        dashboard/placeholderCard.ejs
-    pages/             # auth/, dashboard/, admin/ (incl. admin/events/), events/, registrations/, attendance/ (active)
+                        registrationStatusBadge.ejs, attendanceStatusBadge.ejs, donationStatusBadge.ejs,
+                        dashboard/statCard.ejs, dashboard/placeholderCard.ejs
+    pages/             # auth/, dashboard/, admin/ (incl. admin/events/, admin/donations/), events/,
+                         registrations/, attendance/, donations/ (active)
   public/
     css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css — the design system
-    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm)
+    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm, donation type toggle)
     vendor/fontawesome/  # self-hosted Font Awesome (CSS + one woff2), no CDN dependency
     uploads/events/       # event banner images (gitignored, created at runtime by middlewares/upload.js)
   utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js (active); mailer/pdfGenerator/csvExporter are placeholders*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
   migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status
-                          update + attendance check-in/check-out columns
+                          update + attendance check-in/check-out columns + donations reshape
   seeders/               # 001-initial-seed.js (1 admin, 2 users, 3 categories)
 tests/
   unit/ integration/ e2e/
@@ -90,7 +96,8 @@ docs/
   PHASE4_EVENT_MANAGEMENT.md  # schema change, what was built, design notes, full test instructions
   PHASE5_VOLUNTEER_REGISTRATION.md  # what was built, design notes, bugs found & fixed, full test instructions
   PHASE6_ATTENDANCE_TRACKING.md       # schema change, what was built, design notes, full test instructions
-  API.md                                # filled in as API routes are (re-)added
+  PHASE7_DONATION_MANAGEMENT.md         # schema change, what was built, design notes, full test instructions
+  API.md                                  # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -210,7 +217,28 @@ docs/
   manual hours override is correctly ignored when both timestamps are supplied), statistics, RBAC,
   and graceful handling of invalid/non-existent ids — see `docs/PHASE6_ATTENDANCE_TRACKING.md`
 
+**Phase 7 — Donation Management**
+
+- Schema reshape (new migration, not an edit to prior ones): `donations` gained `donation_type`
+  (Monetary/Food/Clothing/Medical Supplies/Other), `status` (Completed/Pending/Cancelled),
+  `description` (renamed from `notes`, now required); `amount` became nullable (required only for
+  Monetary); `donor_id` became required with `ON DELETE RESTRICT`; `event_id`/`currency`/
+  `payment_method`/`is_anonymous`/`donor_name`/`recorded_by` were dropped — none are part of this
+  phase's scope
+- Donor: record a donation (always starts Pending), view personal history/details/total donated,
+  filter by date and type — no self-edit or self-delete (admin-only, per the instructions)
+- Admin: view all, search by donor name/email, filter by type/date/status, edit (including
+  confirming Pending → Completed, or → Cancelled), delete, statistics, summary by donation type
+- System-enforced rules: amount required only for Monetary donations (enforced at both the service
+  and database layer), ownership-protected donation detail view (404, not leaked, for another
+  donor's donation)
+- Three-state colored badge reusing existing badge components: Completed (green), Pending
+  (orange), Cancelled (red)
+- Verified end-to-end: create (all types), full validation coverage, history/filters, ownership
+  protection, admin search/filter/edit/delete, statistics and summary-by-type, dashboard updates,
+  RBAC, and graceful error handling — see `docs/PHASE7_DONATION_MANAGEMENT.md`
+
 ## Explicitly Not Yet Implemented
 
-Donation Recording, Certificate Generation, Notifications, Reports. These follow the phased
-roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Donation Recording next.
+Certificate Generation, Notifications, Reports. These follow the phased roadmap in
+`docs/PROJECT_BLUEPRINT.md`, starting with Certificate Generation next.

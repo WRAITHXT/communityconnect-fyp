@@ -1,0 +1,74 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>My Donations</h1>
+      <p>Your donation history and total contributions.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/donations/create" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Record a Donation
+      </a>
+    </div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Total Amount Donated</h2>
+    </div>
+    <p class="dash-card-value"><%= totalAmount.toFixed(2) %></p>
+    <p class="hint">Only completed monetary donations are counted toward this total.</p>
+  </div>
+</section>
+
+<div class="card">
+  <form method="GET" action="/my-donations" class="filter-bar">
+    <input class="form-control" type="date" name="date" value="<%= filters.date %>" />
+    <select class="form-control" name="donationType">
+      <option value="">All Types</option>
+      <% Object.keys(typeLabels).forEach(function (key) { %>
+      <option value="<%= key %>" <%= filters.donationType===key ? 'selected' : '' %>>
+        <%= typeLabels[key] %>
+      </option>
+      <% }); %>
+    </select>
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/my-donations" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (donations.length===0) { %>
+    <p class="hint">You haven't recorded any donations yet.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% donations.forEach(function (d) { %>
+          <tr>
+            <td><%= typeLabels[d.donation_type] %></td>
+            <td><%= d.amount !==null ? Number(d.amount).toFixed(2) : '—' %></td>
+            <td><%= formatDate(d.donated_at) %></td>
+            <td>
+              <%- include('../../partials/donationStatusBadge', { donationStatus: d.status }) %>
+            </td>
+            <td><a href="/donations/<%= d.id %>" class="btn btn-ghost btn-sm">View</a></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

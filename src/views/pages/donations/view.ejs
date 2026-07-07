@@ -1,0 +1,41 @@
+<div class="page-header">
+  <h1>Donation Details</h1>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title"><%= typeLabels[donation.donation_type] %></h2>
+      <%- include('../../partials/donationStatusBadge', { donationStatus: donation.status }) %>
+    </div>
+    <div class="profile-summary-grid">
+      <div>
+        <p class="profile-summary-label">Amount</p>
+        <p class="profile-summary-value">
+          <%= donation.amount !==null ? Number(donation.amount).toFixed(2) : 'N/A' %>
+        </p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Donation Date</p>
+        <p class="profile-summary-value"><%= formatDate(donation.donated_at) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Recorded On</p>
+        <p class="profile-summary-value"><%= formatDate(donation.created_at) %></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Description</h2>
+    </div>
+    <p><%= donation.description %></p>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <a href="/my-donations" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Back to My Donations</a>
+</section>

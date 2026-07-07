@@ -1,0 +1,135 @@
+<div class="page-header">
+  <h1>Manage Donations</h1>
+  <p>View, search, and manage all recorded donations.</p>
+</div>
+
+<section class="dashboard-section">
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <p class="stat-label">Total Donations</p>
+      <p class="stat-value"><%= stats.totalDonations %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Completed</p>
+      <p class="stat-value"><%= stats.totalCompleted %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Pending</p>
+      <p class="stat-value"><%= stats.totalPending %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Cancelled</p>
+      <p class="stat-value"><%= stats.totalCancelled %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Total Amount Received</p>
+      <p class="stat-value"><%= stats.totalAmountReceived.toFixed(2) %></p>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <h2 class="section-title">Summary by Donation Type</h2>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Count</th>
+            <th>Total Amount (Completed)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% summaryByType.forEach(function (row) { %>
+          <tr>
+            <td><%= typeLabels[row.donation_type] %></td>
+            <td><%= row.count %></td>
+            <td><%= row.total_amount.toFixed(2) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="card">
+  <form method="GET" action="/admin/donations" class="filter-bar">
+    <input
+      class="form-control"
+      type="text"
+      name="search"
+      placeholder="Search by donor name or email&hellip;"
+      value="<%= filters.search %>"
+    />
+    <select class="form-control" name="donationType">
+      <option value="">All Types</option>
+      <% Object.keys(typeLabels).forEach(function (key) { %>
+      <option value="<%= key %>" <%= filters.donationType===key ? 'selected' : '' %>>
+        <%= typeLabels[key] %>
+      </option>
+      <% }); %>
+    </select>
+    <input class="form-control" type="date" name="date" value="<%= filters.date %>" />
+    <select class="form-control" name="status">
+      <option value="">All Statuses</option>
+      <option value="completed" <%= filters.status==='completed' ? 'selected' : '' %>>Completed</option>
+      <option value="pending" <%= filters.status==='pending' ? 'selected' : '' %>>Pending</option>
+      <option value="cancelled" <%= filters.status==='cancelled' ? 'selected' : '' %>>Cancelled</option>
+    </select>
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/admin/donations" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (donations.length===0) { %>
+    <p class="hint">No donations match your filters.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Donor</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% donations.forEach(function (d) { %>
+          <tr>
+            <td><%= d.donor_name %></td>
+            <td><%= typeLabels[d.donation_type] %></td>
+            <td><%= d.amount !==null ? Number(d.amount).toFixed(2) : '—' %></td>
+            <td><%= formatDate(d.donated_at) %></td>
+            <td>
+              <%- include('../../../partials/donationStatusBadge', { donationStatus: d.status }) %>
+            </td>
+            <td class="table-actions">
+              <a href="/admin/donations/<%= d.id %>/edit" class="btn btn-ghost btn-sm" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+              <form
+                method="POST"
+                action="/admin/donations/<%= d.id %>/delete"
+                class="inline-form"
+                data-confirm="Delete this donation record? This cannot be undone."
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

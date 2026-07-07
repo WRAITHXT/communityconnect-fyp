@@ -16,6 +16,8 @@ const webEventRoutes = require('./routes/web/eventRoutes');
 const webAdminEventRoutes = require('./routes/web/adminEventRoutes');
 const webRegistrationRoutes = require('./routes/web/registrationRoutes');
 const webAttendanceRoutes = require('./routes/web/attendanceRoutes');
+const webDonationRoutes = require('./routes/web/donationRoutes');
+const webAdminDonationRoutes = require('./routes/web/adminDonationRoutes');
 
 const app = express();
 
@@ -65,6 +67,8 @@ app.use('/', webEventRoutes);
 app.use('/admin/events', webAdminEventRoutes);
 app.use('/', webRegistrationRoutes);
 app.use('/', webAttendanceRoutes);
+app.use('/', webDonationRoutes);
+app.use('/admin/donations', webAdminDonationRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

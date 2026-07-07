@@ -1,0 +1,16 @@
+<%
+  var badgeClass = 'badge-neutral';
+  var badgeLabel = 'Unknown';
+
+  if (donationStatus === 'completed') {
+    badgeClass = 'badge-success';
+    badgeLabel = 'Completed';
+  } else if (donationStatus === 'pending') {
+    badgeClass = 'badge-warning';
+    badgeLabel = 'Pending';
+  } else if (donationStatus === 'cancelled') {
+    badgeClass = 'badge-danger';
+    badgeLabel = 'Cancelled';
+  }
+%>
+<span class="badge <%= badgeClass %>"><%= badgeLabel %></span>
