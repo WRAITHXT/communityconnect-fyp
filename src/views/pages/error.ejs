@@ -1,8 +1,7 @@
-<%- include('../partials/header', { title: 'Error' }) %>
-
-<main class="error-page">
-  <h1><%= status %></h1>
-  <p><%= message %></p>
+<main class="public-page">
+  <div class="card auth-card error-card">
+    <h1><%= status %></h1>
+    <p><%= message %></p>
+    <a href="/" class="btn btn-primary btn-sm">Go Home</a>
+  </div>
 </main>
-
-<%- include('../partials/footer') %>

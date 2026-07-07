@@ -7,6 +7,7 @@ function requireRole(...allowedRoles) {
         return res.status(403).json({ error: { message: 'Forbidden.' } });
       }
       return res.status(403).render('pages/error', {
+        title: 'Forbidden - CommunityConnect',
         status: 403,
         message: 'Forbidden — you do not have access to this page.',
       });

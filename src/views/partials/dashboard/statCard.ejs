@@ -1,0 +1,8 @@
+<div class="card stat-card">
+  <div class="stat-icon"><i class="<%= stat.icon %>"></i></div>
+  <p class="stat-label"><%= stat.label %></p>
+  <p class="stat-value"><%= stat.value %></p>
+  <% if (!stat.isLive) { %>
+  <p class="stat-caption">Coming soon</p>
+  <% } %>
+</div>

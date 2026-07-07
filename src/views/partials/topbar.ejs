@@ -1,0 +1,36 @@
+<header class="topbar">
+  <button
+    type="button"
+    class="topbar-menu-btn"
+    id="sidebarToggleBtn"
+    aria-label="Toggle sidebar"
+  >
+    <i class="fa-solid fa-bars"></i>
+  </button>
+
+  <%- include('./breadcrumb', { breadcrumbs: typeof breadcrumbs !== 'undefined' ? breadcrumbs : [] }) %>
+
+  <div class="topbar-user" id="userMenuToggle">
+    <div class="avatar"><%= initials %></div>
+    <div class="topbar-user-info">
+      <span class="topbar-user-name"><%= user.name %></span>
+      <span class="badge badge-role"><%= user.role %></span>
+    </div>
+    <i class="fa-solid fa-chevron-down topbar-user-caret"></i>
+
+    <div class="user-menu" id="userMenu">
+      <div class="user-menu-header">
+        <div class="avatar avatar-lg"><%= initials %></div>
+        <div>
+          <p class="user-menu-name"><%= user.name %></p>
+          <p class="user-menu-email"><%= user.email %></p>
+        </div>
+      </div>
+      <form method="POST" action="/logout">
+        <button type="submit" class="user-menu-logout">
+          <i class="fa-solid fa-right-from-bracket"></i> Log Out
+        </button>
+      </form>
+    </div>
+  </div>
+</header>

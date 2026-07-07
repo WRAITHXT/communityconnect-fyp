@@ -1,0 +1,133 @@
+/*
+  Dashboard-specific compositions. These build on top of components.css
+  (.card, .badge, .btn) rather than duplicating styling — keep it that way
+  as Event Management / Volunteer Management / Donations / Reports /
+  Certificates add their own dashboard-adjacent pages.
+*/
+
+.page-header {
+  margin-bottom: var(--space-6);
+}
+
+.page-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: var(--space-1);
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+}
+
+.dashboard-section {
+  margin-top: var(--space-6);
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+
+/* ---- Profile summary ---- */
+
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.profile-summary-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-subtle);
+  margin-bottom: 0.3rem;
+}
+
+.profile-summary-value {
+  font-weight: 600;
+}
+
+/* ---- Activity / placeholder cards ---- */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.dash-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.dash-card-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: var(--space-3);
+}
+
+.dash-card-description {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+/* ---- Admin stat cards ---- */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin: 0 auto var(--space-3);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.stat-value {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.stat-caption {
+  margin-top: var(--space-2);
+  font-size: 0.7rem;
+  color: var(--color-text-subtle);
+}
+
+/* ---- Quick actions ---- */
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

@@ -1,0 +1,56 @@
+// Sidebar navigation structure per role, shared by the app-shell layout
+// across every module. Items with href: null render as disabled,
+// "Coming soon" entries — they preview where each future module (Event
+// Management, Volunteer Management, Donations, Reports, Certificates) will
+// live in the sidebar without linking anywhere until that module exists.
+
+const userNavItems = [
+  { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/dashboard' },
+  {
+    key: 'events',
+    label: 'Upcoming Events',
+    icon: 'fa-solid fa-calendar-days',
+    href: null,
+  },
+  {
+    key: 'registrations',
+    label: 'My Registrations',
+    icon: 'fa-solid fa-clipboard-list',
+    href: null,
+  },
+  { key: 'hours', label: 'My Volunteer Hours', icon: 'fa-solid fa-clock', href: null },
+  {
+    key: 'donations',
+    label: 'My Donations',
+    icon: 'fa-solid fa-hand-holding-heart',
+    href: null,
+  },
+  { key: 'certificates', label: 'My Certificates', icon: 'fa-solid fa-award', href: null },
+  { key: 'notifications', label: 'Notifications', icon: 'fa-solid fa-bell', href: null },
+];
+
+const adminNavItems = [
+  { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/admin/dashboard' },
+  { key: 'events', label: 'Manage Events', icon: 'fa-solid fa-calendar-days', href: null },
+  {
+    key: 'registrations',
+    label: 'Volunteer Registrations',
+    icon: 'fa-solid fa-clipboard-list',
+    href: null,
+  },
+  {
+    key: 'donations',
+    label: 'Donations',
+    icon: 'fa-solid fa-hand-holding-heart',
+    href: null,
+  },
+  { key: 'certificates', label: 'Certificates', icon: 'fa-solid fa-award', href: null },
+  { key: 'reports', label: 'Reports', icon: 'fa-solid fa-chart-line', href: null },
+  { key: 'users', label: 'Manage Users', icon: 'fa-solid fa-users', href: null },
+];
+
+function getNavItems(role) {
+  return role === 'admin' ? adminNavItems : userNavItems;
+}
+
+module.exports = { getNavItems };

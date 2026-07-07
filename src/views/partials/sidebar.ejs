@@ -1,0 +1,41 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/" class="sidebar-brand">
+      <i class="fa-solid fa-hands-holding-circle"></i>
+      <span class="sidebar-brand-text">CommunityConnect</span>
+    </a>
+    <button
+      type="button"
+      class="sidebar-collapse-btn"
+      id="sidebarCollapseBtn"
+      aria-label="Collapse sidebar"
+    >
+      <i class="fa-solid fa-angles-left"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      <% navItems.forEach(function (item) { %>
+      <li>
+        <% if (item.href) { %>
+        <a
+          class="nav-link <%= currentPath === item.href ? 'is-active' : '' %>"
+          href="<%= item.href %>"
+        >
+          <i class="<%= item.icon %>"></i>
+          <span class="nav-link-text"><%= item.label %></span>
+        </a>
+        <% } else { %>
+        <span class="nav-link is-disabled" title="Coming soon">
+          <i class="<%= item.icon %>"></i>
+          <span class="nav-link-text"><%= item.label %></span>
+          <span class="badge badge-soft nav-link-badge">Soon</span>
+        </span>
+        <% } %>
+      </li>
+      <% }); %>
+    </ul>
+  </nav>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

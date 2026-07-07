@@ -1,0 +1,17 @@
+<header class="simple-nav">
+  <a class="simple-nav-brand" href="/">
+    <i class="fa-solid fa-hands-holding-circle"></i>
+    CommunityConnect
+  </a>
+  <nav class="simple-nav-links">
+    <% if (currentUser) { %>
+    <a href="/dashboard" class="btn btn-ghost btn-sm">Dashboard</a>
+    <form method="POST" action="/logout" class="inline-form">
+      <button type="submit" class="btn btn-secondary btn-sm">Log Out</button>
+    </form>
+    <% } else { %>
+    <a href="/login" class="btn btn-ghost btn-sm">Log In</a>
+    <a href="/register" class="btn btn-primary btn-sm">Register</a>
+    <% } %>
+  </nav>
+</header>

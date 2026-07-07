@@ -3,3 +3,4 @@ logs
 coverage
 package-lock.json
 docs
+src/public/vendor

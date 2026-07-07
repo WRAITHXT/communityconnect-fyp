@@ -1,0 +1,41 @@
+<div class="page-header">
+  <h1 id="greeting">Welcome, <%= user.name %></h1>
+  <p>Here's your CommunityConnect overview.</p>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Profile Summary</h2>
+    </div>
+    <div class="profile-summary-grid">
+      <div>
+        <p class="profile-summary-label">Name</p>
+        <p class="profile-summary-value"><%= user.name %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Email</p>
+        <p class="profile-summary-value"><%= user.email %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Role</p>
+        <p class="profile-summary-value"><span class="badge badge-role"><%= user.role %></span></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Member Since</p>
+        <p class="profile-summary-value">
+          <%= new Date(user.created_at).toLocaleDateString() %>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <h2 class="section-title">Your Activity</h2>
+  <div class="dashboard-grid">
+    <% cards.forEach(function (card) { %>
+    <%- include('../../partials/dashboard/placeholderCard', { card: card }) %>
+    <% }); %>
+  </div>
+</section>

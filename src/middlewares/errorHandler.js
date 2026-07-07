@@ -21,6 +21,7 @@ function errorHandler(err, req, res, next) {
   }
 
   return res.status(status).render('pages/error', {
+    title: 'Error - CommunityConnect',
     status,
     message: err.message || 'Internal Server Error',
   });

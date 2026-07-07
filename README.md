@@ -5,8 +5,9 @@ Cloud-Based Integrated Platform for Enhancing Community Event, Volunteer and Don
 Full architecture, feature scope, roles, roadmap, and security design: [docs/PROJECT_BLUEPRINT.md](docs/PROJECT_BLUEPRINT.md).
 Database schema details: [docs/PHASE1_DATABASE.md](docs/PHASE1_DATABASE.md) and [docs/ERD.md](docs/ERD.md).
 Authentication details and how to test it: [docs/PHASE2_AUTHENTICATION.md](docs/PHASE2_AUTHENTICATION.md).
+Dashboard module details and how to test it: [docs/PHASE3_DASHBOARD.md](docs/PHASE3_DASHBOARD.md).
 
-**Status**: Phase 2 — Authentication implemented (registration, login, logout, JWT-in-httpOnly-cookie, RBAC). Event Management, Volunteer Registration, Attendance, Donations, Certificates, Notifications, Reports, and the real User/Admin Dashboards are not implemented yet.
+**Status**: Phase 3 — User Dashboard and Admin Dashboard implemented on top of Authentication/RBAC. Event Management, Volunteer Registration, Attendance, Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard cards/stats are placeholders).
 
 ## Stack
 
@@ -47,21 +48,28 @@ commands.
 
 ```
 src/
-  config/        # env.js, db.js (pg Pool), jwt.js (active), constants.js*
-  models/        # userModel.js (active); more models arrive with each future feature module
-  services/       # authService.js (active); more services arrive with each future feature module
+  config/        # env.js, db.js (pg Pool), jwt.js (active), navigation.js (sidebar nav data), constants.js*
+  models/        # userModel.js (active, incl. countUsers()); more models arrive with each future module
+  services/       # authService.js, dashboardService.js (active); more arrive with each future module
   controllers/
-    web/           # authController.js (active) — renders EJS views
-    api/            # authController.js (active, admin ping only) — returns JSON (/api/v1)
+    web/           # authController.js, dashboardController.js (active) — render EJS views
+    api/            # empty — no active API routes right now*
   routes/
-    web/            # authRoutes.js (active)
-    api/             # authRoutes.js (active)
+    web/            # authRoutes.js, dashboardRoutes.js (active)
+    api/             # empty*
   middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js (all active);
                      upload.js/csrf.js are still placeholders*
   validators/       # authValidators.js (active)
-  views/            # EJS templates (layouts, partials, pages/auth (active), pages/<other features>)
-  public/            # static assets (css, client-side js, images)
-  utils/              # logger.js, tokenService.js (active); storage/mailer/pdfGenerator/csvExporter are placeholders*
+  views/
+    layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
+    partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs,
+                        dashboard/statCard.ejs, dashboard/placeholderCard.ejs
+    pages/             # auth/ (active), dashboard/ (active), admin/ (active), pages/<other features>
+  public/
+    css/               # base.css, layout.css, components.css, dashboard.css, auth.css — the design system
+    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting)
+    vendor/fontawesome/  # self-hosted Font Awesome (CSS + one woff2), no CDN dependency
+  utils/              # logger.js, tokenService.js, format.js (active); storage/mailer/pdfGenerator/csvExporter are placeholders*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
   migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger function
@@ -73,7 +81,8 @@ docs/
   PHASE1_DATABASE.md       # table/relationship/constraint explanations, run & seed instructions
   ERD.md                    # entity-relationship diagram (Mermaid)
   PHASE2_AUTHENTICATION.md  # what was built, how JWT/RBAC work, full test instructions
-  API.md                     # filled in as more API routes are built
+  PHASE3_DASHBOARD.md        # design system + dashboard module, design notes, full test instructions
+  API.md                     # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -83,7 +92,7 @@ docs/
 **Phase 0 — Scaffolding**
 
 - Express app assembly (`src/app.js`) + entrypoint (`server.js`)
-- EJS view engine, with a minimal header/footer partial pattern
+- EJS view engine
 - Environment variable loading via `dotenv` (`src/config/env.js`)
 - PostgreSQL connection pool via `pg` (`src/config/db.js`)
 - Structured logging: Winston (`src/utils/logger.js`) with HTTP request logs piped in from Morgan
@@ -104,15 +113,35 @@ docs/
   `token_version` check against the live database (see `docs/PHASE2_AUTHENTICATION.md`)
 - `verifyJwt` (strict) and `attachCurrentUser` (soft, sitewide) middleware; `requireRole` for RBAC
 - Input validation (`express-validator`) with forms that redisplay errors without losing input
-- `/profile` and `/api/v1/admin/ping` as temporary, explicitly-labeled routes proving the
-  middleware works — not the real User/Admin Dashboards
+- `/profile` and `/api/v1/admin/ping` existed as temporary, explicitly-labeled routes proving the
+  middleware works — both retired in Phase 3 in favor of the real dashboards
 - Verified end-to-end with `curl`: registration, duplicate-email/weak-password/mismatched-password
   validation, login (including the no-enumeration generic error), logout, protected-route
   redirects, RBAC (403/401), tampered/malformed/expired JWT rejection, and live revocation via
   `token_version` and account suspension
 
+**Phase 3 — Design System + Dashboard Module**
+
+- Reusable design system: design tokens (`base.css`), an app shell with a collapsible sidebar +
+  topbar + breadcrumb + user menu (`layout.css`), and a component library — buttons, cards,
+  badges, forms, alerts, tables (`components.css`) — meant to carry through every future module
+- Self-hosted Font Awesome icons (no CDN dependency — works offline for a defense demo)
+- User Dashboard (`/dashboard`): welcome message, profile summary, six placeholder cards (Upcoming
+  Events, My Event Registrations, My Volunteer Hours, My Donations, My Certificates, Notifications)
+- Admin Dashboard (`/admin/dashboard`, `requireRole('admin')`): welcome message, five stat cards
+  (Total Users is a live count; the other four are labeled placeholders), five disabled quick-action
+  buttons
+- Sidebar previews every future module's nav entry as a disabled "Soon" item, consistent with the
+  dashboard cards' own placeholder convention
+- Vanilla JS: sidebar collapse (persisted), mobile off-canvas drawer, user-menu dropdown, and a
+  client-side time-of-day greeting
+- Verified end-to-end: both dashboards render correctly per role, `/admin/dashboard` returns 403
+  for a non-admin, `/dashboard` role-redirects admins, unauthenticated access redirects to
+  `/login`, logout properly de-authenticates (tested with a real cookie jar) — see
+  `docs/PHASE3_DASHBOARD.md`
+
 ## Explicitly Not Yet Implemented
 
 Event Management, Volunteer Registration, Attendance Tracking, Donation Recording, Certificate
-Generation, Notifications, Reports, and the real User/Admin Dashboards. These follow the phased
-roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Event Management next.
+Generation, Notifications, Reports. These follow the phased roadmap in
+`docs/PROJECT_BLUEPRINT.md`, starting with Event Management next.

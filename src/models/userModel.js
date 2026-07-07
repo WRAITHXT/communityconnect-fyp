@@ -23,10 +23,15 @@ async function createUser({ name, email, passwordHash, role }) {
   return rows[0];
 }
 
+async function countUsers() {
+  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM users');
+  return rows[0].count;
+}
+
 function sanitizeUser(user) {
   if (!user) return null;
   const { id, name, email, role, status, created_at } = user;
   return { id, name, email, role, status, created_at };
 }
 
-module.exports = { findByEmail, findById, createUser, sanitizeUser };
+module.exports = { findByEmail, findById, createUser, countUsers, sanitizeUser };
