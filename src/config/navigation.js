@@ -16,7 +16,7 @@ const userNavItems = [
     key: 'registrations',
     label: 'My Registrations',
     icon: 'fa-solid fa-clipboard-list',
-    href: null,
+    href: '/my-registrations',
   },
   { key: 'hours', label: 'My Volunteer Hours', icon: 'fa-solid fa-clock', href: null },
   {
@@ -37,6 +37,11 @@ const adminNavItems = [
     icon: 'fa-solid fa-calendar-days',
     href: '/admin/events',
   },
+  // No global cross-event registrations page exists — volunteer
+  // registrations are managed per-event, via a "Volunteers" button on each
+  // event's own detail page (/admin/events/:id/volunteers). Left as a
+  // disabled placeholder here until/unless a global view is built later
+  // (e.g. as part of Reports).
   {
     key: 'registrations',
     label: 'Volunteer Registrations',

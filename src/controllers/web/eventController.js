@@ -1,11 +1,21 @@
 const eventModel = require('../../models/eventModel');
 const eventCategoryModel = require('../../models/eventCategoryModel');
-const { getAppShellLocals } = require('../../utils/viewHelpers');
+const registrationModel = require('../../models/registrationModel');
+const registrationService = require('../../services/registrationService');
+const { getAppShellLocals, parsePositiveIntParam } = require('../../utils/viewHelpers');
 
 // Users only ever browse published/closed events — draft events never
 // appear here, regardless of what a client sends as a status filter (see
 // eventModel.list's publicOnly flag, which is always true for this route).
 const VALID_PUBLIC_STATUSES = ['published', 'closed'];
+
+function renderNotFound(req, res) {
+  return res.status(404).render('pages/error', {
+    title: 'Not Found - CommunityConnect',
+    status: 404,
+    message: 'Event not found.',
+  });
+}
 
 async function browseEvents(req, res, next) {
   try {
@@ -41,15 +51,17 @@ async function browseEvents(req, res, next) {
 }
 
 async function viewEvent(req, res, next) {
+  const eventId = parsePositiveIntParam(req.params.id);
+  if (eventId === null) return renderNotFound(req, res);
+
   try {
-    const event = await eventModel.findById(req.params.id);
+    const event = await eventModel.findById(eventId);
     if (!event || !VALID_PUBLIC_STATUSES.includes(event.status)) {
-      return res.status(404).render('pages/error', {
-        title: 'Not Found - CommunityConnect',
-        status: 404,
-        message: 'Event not found.',
-      });
+      return renderNotFound(req, res);
     }
+
+    const registration = await registrationModel.findByEventAndUser(eventId, req.user.id);
+    const regStatus = registrationService.getViewerRegistrationStatus(event, registration);
 
     res.render('pages/events/view', {
       title: `${event.title} - CommunityConnect`,
@@ -61,6 +73,7 @@ async function viewEvent(req, res, next) {
         { label: event.title },
       ],
       event,
+      regStatus,
     });
   } catch (err) {
     next(err);

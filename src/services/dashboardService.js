@@ -1,20 +1,16 @@
 const userModel = require('../models/userModel');
 const eventModel = require('../models/eventModel');
+const registrationModel = require('../models/registrationModel');
 
 // Icons match the sidebar entries in src/config/navigation.js for the same
 // concept, so the two stay visually tied together. Cards/stats tied to a
 // module that isn't implemented yet stay static placeholders
 // (value: '—', status: 'Coming soon') until that module lands — see
 // docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order. "Upcoming
-// Events" (user) and "Total Events" (admin) below are now live, since Event
-// Management is implemented as of Phase 4.
+// Events" (user), "Total Events" (admin) since Phase 4, and "My Event
+// Registrations" (user) / "Total Volunteers" (admin) since Phase 5 are now
+// live.
 const USER_DASHBOARD_CARDS = [
-  {
-    key: 'myRegistrations',
-    title: 'My Event Registrations',
-    description: 'Track the status of events you have applied to volunteer for.',
-    icon: 'fa-solid fa-clipboard-list',
-  },
   {
     key: 'myVolunteerHours',
     title: 'My Volunteer Hours',
@@ -41,18 +37,30 @@ const USER_DASHBOARD_CARDS = [
   },
 ];
 
-async function getUserDashboardCards() {
+async function getUserDashboardCards(userId) {
   const upcomingEventsCount = await eventModel.countUpcomingPublished();
+  const myRegistrationsCount = await registrationModel.countApprovedForUser(userId);
 
-  const liveCard = {
-    key: 'upcomingEvents',
-    title: 'Upcoming Events',
-    description: 'Browse and register for upcoming community events.',
-    icon: 'fa-solid fa-calendar-days',
-    value: String(upcomingEventsCount),
-    status: null,
-    href: '/events',
-  };
+  const liveCards = [
+    {
+      key: 'upcomingEvents',
+      title: 'Upcoming Events',
+      description: 'Browse and register for upcoming community events.',
+      icon: 'fa-solid fa-calendar-days',
+      value: String(upcomingEventsCount),
+      status: null,
+      href: '/events',
+    },
+    {
+      key: 'myRegistrations',
+      title: 'My Event Registrations',
+      description: 'Track the status of events you have applied to volunteer for.',
+      icon: 'fa-solid fa-clipboard-list',
+      value: String(myRegistrationsCount),
+      status: null,
+      href: '/my-registrations',
+    },
+  ];
 
   const placeholderCards = USER_DASHBOARD_CARDS.map((card) => ({
     ...card,
@@ -61,15 +69,16 @@ async function getUserDashboardCards() {
     href: null,
   }));
 
-  return [liveCard, ...placeholderCards];
+  return [...liveCards, ...placeholderCards];
 }
 
-// Total Users and Total Events are real (Authentication and Event
-// Management are both implemented). The rest stay placeholders until their
-// respective modules are implemented.
+// Total Users, Total Events, and Total Volunteers are real (Authentication,
+// Event Management, and Volunteer Registration are all implemented). The
+// rest stay placeholders until their respective modules are implemented.
 async function getAdminStats() {
   const totalUsers = await userModel.countUsers();
   const totalEvents = await eventModel.countAll();
+  const totalVolunteers = await registrationModel.countDistinctActiveVolunteers();
 
   return [
     {
@@ -89,8 +98,8 @@ async function getAdminStats() {
     {
       key: 'totalVolunteers',
       label: 'Total Volunteers',
-      value: '—',
-      isLive: false,
+      value: totalVolunteers,
+      isLive: true,
       icon: 'fa-solid fa-people-group',
     },
     {
@@ -110,8 +119,10 @@ async function getAdminStats() {
   ];
 }
 
-// "Create Event" is now a real action (Event Management is implemented).
-// The rest remain disabled until their modules exist.
+// "Create Event" is real (Event Management is implemented). The rest
+// remain disabled until their modules exist. "Manage Registrations" stays
+// disabled since there's no global cross-event registrations page (see
+// config/navigation.js) — only the per-event view under Manage Events.
 function getAdminQuickActions() {
   return [
     {
@@ -121,9 +132,9 @@ function getAdminQuickActions() {
       href: '/admin/events/create',
     },
     {
-      key: 'approveRegistrations',
-      label: 'Approve Registrations',
-      icon: 'fa-solid fa-check',
+      key: 'manageRegistrations',
+      label: 'Manage Registrations',
+      icon: 'fa-solid fa-clipboard-list',
       href: null,
     },
     {

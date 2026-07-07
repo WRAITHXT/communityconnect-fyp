@@ -1,0 +1,19 @@
+<%
+  var badgeClass = 'badge-neutral';
+  var badgeLabel = 'Unknown';
+
+  if (regStatus === 'registered') {
+    badgeClass = 'badge-success';
+    badgeLabel = 'Registered';
+  } else if (regStatus === 'cancelled') {
+    badgeClass = 'badge-neutral';
+    badgeLabel = 'Registration Cancelled';
+  } else if (regStatus === 'closed') {
+    badgeClass = 'badge-danger';
+    badgeLabel = 'Registration Closed';
+  } else if (regStatus === 'full') {
+    badgeClass = 'badge-warning';
+    badgeLabel = 'Event Full';
+  }
+%>
+<span class="badge <%= badgeClass %>"><%= badgeLabel %></span>

@@ -1,0 +1,96 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Volunteers &mdash; <%= event.title %></h1>
+      <p>View and manage volunteers registered for this event.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/events/<%= event.id %>" class="btn btn-ghost">
+        <i class="fa-solid fa-arrow-left"></i> Back to Event
+      </a>
+    </div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <p class="stat-label">Registered</p>
+      <p class="stat-value"><%= stats.total_registered %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Remaining Slots</p>
+      <p class="stat-value"><%= Math.max(0, event.remaining_slots) %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Capacity</p>
+      <p class="stat-value"><%= event.capacity %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Cancelled</p>
+      <p class="stat-value"><%= stats.total_cancelled %></p>
+    </div>
+  </div>
+</section>
+
+<div class="card">
+  <form method="GET" action="/admin/events/<%= event.id %>/volunteers" class="filter-bar">
+    <input
+      class="form-control"
+      type="text"
+      name="search"
+      placeholder="Search by name or email&hellip;"
+      value="<%= filters.search %>"
+    />
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Search</button>
+    <a href="/admin/events/<%= event.id %>/volunteers" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (registrations.length===0) { %>
+    <p class="hint">No volunteers match your search.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Registered On</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% registrations.forEach(function (reg) { %>
+          <tr>
+            <td><%= reg.volunteer_name %></td>
+            <td><%= reg.volunteer_email %></td>
+            <td><%= formatDate(reg.applied_at) %></td>
+            <td>
+              <%- include('../../../partials/registrationStatusBadge', { regStatus: reg.status==='approved' ? 'registered' : 'cancelled' }) %>
+            </td>
+            <td>
+              <% if (reg.status==='approved' ) { %>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/volunteers/<%= reg.id %>/remove"
+                class="inline-form"
+                data-confirm="Remove this volunteer's registration?"
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Remove">
+                  <i class="fa-solid fa-user-xmark"></i>
+                </button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

@@ -7,8 +7,9 @@ Database schema details: [docs/PHASE1_DATABASE.md](docs/PHASE1_DATABASE.md) and 
 Authentication details and how to test it: [docs/PHASE2_AUTHENTICATION.md](docs/PHASE2_AUTHENTICATION.md).
 Dashboard module details and how to test it: [docs/PHASE3_DASHBOARD.md](docs/PHASE3_DASHBOARD.md).
 Event Management details and how to test it: [docs/PHASE4_EVENT_MANAGEMENT.md](docs/PHASE4_EVENT_MANAGEMENT.md).
+Volunteer Registration details and how to test it: [docs/PHASE5_VOLUNTEER_REGISTRATION.md](docs/PHASE5_VOLUNTEER_REGISTRATION.md).
 
-**Status**: Phase 4 — Event Management implemented (full CRUD, publish/unpublish, banner uploads, search/filter, RBAC). Volunteer Registration, Attendance, Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
+**Status**: Phase 5 — Volunteer Registration implemented (register/cancel, duplicate/deadline/capacity enforcement, admin roster management, colored status badges). Attendance, Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -49,22 +50,22 @@ commands.
 ```
 src/
   config/        # env.js, db.js (pg Pool), jwt.js, navigation.js (sidebar nav data, active), constants.js*
-  models/        # userModel.js, eventModel.js, eventCategoryModel.js (active); more arrive with each future module
-  services/       # authService.js, dashboardService.js, eventService.js (active); more arrive with each future module
+  models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js (active)
+  services/       # authService.js, dashboardService.js, eventService.js, registrationService.js (active)
   controllers/
-    web/           # authController.js, dashboardController.js, eventController.js, adminEventController.js — render EJS views
+    web/           # auth/dashboard/event/adminEvent/registration/adminRegistration controllers — render EJS views
     api/            # empty — no active API routes right now*
   routes/
-    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js (active)
+    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js
     api/             # empty*
-  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js (all active);
+  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js (all active);
                      csrf.js is still a placeholder*
   validators/       # authValidators.js, eventValidators.js (active)
   views/
     layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
-    partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs,
-                        dashboard/statCard.ejs, dashboard/placeholderCard.ejs
-    pages/             # auth/, dashboard/, admin/ (incl. admin/events/), events/ (active), pages/<other features>
+    partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs, flashMessage.ejs,
+                        registrationStatusBadge.ejs, dashboard/statCard.ejs, dashboard/placeholderCard.ejs
+    pages/             # auth/, dashboard/, admin/ (incl. admin/events/), events/, registrations/ (active)
   public/
     css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css — the design system
     js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm)
@@ -84,7 +85,8 @@ docs/
   PHASE2_AUTHENTICATION.md  # what was built, how JWT/RBAC work, full test instructions
   PHASE3_DASHBOARD.md        # design system + dashboard module, design notes, full test instructions
   PHASE4_EVENT_MANAGEMENT.md  # schema change, what was built, design notes, full test instructions
-  API.md                       # filled in as API routes are (re-)added
+  PHASE5_VOLUNTEER_REGISTRATION.md  # what was built, design notes, bugs found & fixed, full test instructions
+  API.md                              # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -160,8 +162,32 @@ docs/
   files) — a real bug (validation re-renders returning `200` instead of `400`) was found and fixed
   during this session — see `docs/PHASE4_EVENT_MANAGEMENT.md`
 
+**Phase 5 — Volunteer Registration**
+
+- Direct self-service registration (no approve/reject step — see design notes in
+  `docs/PHASE5_VOLUNTEER_REGISTRATION.md`): register, cancel (only before the registration
+  deadline), view "My Registered Events"
+- System-enforced rules: no duplicate registrations, no registering after the deadline, no
+  registering once capacity is reached, remaining slots recalculated immediately on
+  registration/cancellation
+- Admin: per-event volunteer roster (`/admin/events/:id/volunteers`), search by name/email,
+  remove a registration, per-event stats (registered/remaining/capacity/cancelled)
+- Four-state colored status badge reusing the existing badge component
+  (`badge-success`/`badge-neutral`/`badge-danger`/`badge-warning`): Registered (green),
+  Registration Cancelled (gray), Registration Closed (red), Event Full (orange)
+- New reusable pieces: a query-string-based flash message system (`middlewares/flash.js` +
+  `viewHelpers.redirectWithFlash`) for simple "action done" redirects, and
+  `viewHelpers.parsePositiveIntParam` for safely validating route-param ids
+- **Two real bugs found and fixed during testing**: (1) `adminEventRoutes` applied its
+  `requireRole('admin')` check to every request reaching that router regardless of path, silently
+  403-ing unrelated routes mounted after it — fixed by mounting it at `/admin/events` with
+  relative internal paths instead of at the app root; (2) a wrong relative `include()` path in
+  `admin/events/volunteers.ejs`. Full details in `docs/PHASE5_VOLUNTEER_REGISTRATION.md`
+- Verified end-to-end: successful registration, duplicate rejection, deadline enforcement,
+  capacity enforcement, cancellation (including the deadline cutoff), remaining-slot
+  recalculation, admin roster/search/remove, RBAC, and all four badge states
+
 ## Explicitly Not Yet Implemented
 
-Volunteer Registration, Attendance Tracking, Donation Recording, Certificate Generation,
-Notifications, Reports. These follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`, starting
-with Volunteer Registration next.
+Attendance Tracking, Donation Recording, Certificate Generation, Notifications, Reports. These
+follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Attendance Tracking next.

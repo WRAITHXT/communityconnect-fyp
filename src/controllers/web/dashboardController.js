@@ -10,7 +10,7 @@ async function index(req, res, next) {
   }
 
   try {
-    const cards = await dashboardService.getUserDashboardCards();
+    const cards = await dashboardService.getUserDashboardCards(req.user.id);
 
     res.render('pages/dashboard/index', {
       title: 'Dashboard - CommunityConnect',

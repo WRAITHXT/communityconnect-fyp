@@ -53,8 +53,35 @@
 </section>
 
 <section class="dashboard-section">
-  <button type="button" class="btn btn-primary" disabled title="Coming soon">
-    <i class="fa-solid fa-clipboard-list"></i> Register to Volunteer
-    <span class="badge badge-soft">Soon</span>
-  </button>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Volunteer Registration</h2>
+      <% if (regStatus) { %>
+      <%- include('../../partials/registrationStatusBadge', { regStatus: regStatus }) %>
+      <% } %>
+    </div>
+
+    <% if (regStatus==='registered' ) { %>
+    <form
+      method="POST"
+      action="/events/<%= event.id %>/cancel"
+      class="inline-form"
+      data-confirm="Cancel your registration for this event?"
+    >
+      <button type="submit" class="btn btn-danger">
+        <i class="fa-solid fa-xmark"></i> Cancel Registration
+      </button>
+    </form>
+    <% } else if (regStatus==='closed' ) { %>
+    <p class="hint">The registration deadline for this event has passed.</p>
+    <% } else if (regStatus==='full' ) { %>
+    <p class="hint">This event has reached its maximum volunteer capacity.</p>
+    <% } else { %>
+    <form method="POST" action="/events/<%= event.id %>/register" class="inline-form">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-clipboard-list"></i> Register to Volunteer
+      </button>
+    </form>
+    <% } %>
+  </div>
 </section>

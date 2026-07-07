@@ -9,10 +9,12 @@ const logger = require('./utils/logger');
 const storage = require('./utils/storage');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 const { attachCurrentUser } = require('./middlewares/verifyJwt');
+const { attachFlashFromQuery } = require('./middlewares/flash');
 const webAuthRoutes = require('./routes/web/authRoutes');
 const webDashboardRoutes = require('./routes/web/dashboardRoutes');
 const webEventRoutes = require('./routes/web/eventRoutes');
 const webAdminEventRoutes = require('./routes/web/adminEventRoutes');
+const webRegistrationRoutes = require('./routes/web/registrationRoutes');
 
 const app = express();
 
@@ -48,6 +50,7 @@ app.use(
 // having to enforce authentication. Does not block unauthenticated
 // requests — routes that must be protected use verifyJwt individually.
 app.use(attachCurrentUser);
+app.use(attachFlashFromQuery);
 
 // Temporary landing route — replaced by the proper MVC routing structure
 // (src/routes) once more modules are implemented.
@@ -58,7 +61,8 @@ app.get('/', (req, res) => {
 app.use('/', webAuthRoutes);
 app.use('/', webDashboardRoutes);
 app.use('/', webEventRoutes);
-app.use('/', webAdminEventRoutes);
+app.use('/admin/events', webAdminEventRoutes);
+app.use('/', webRegistrationRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

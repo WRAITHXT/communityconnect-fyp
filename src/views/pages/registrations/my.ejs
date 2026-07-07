@@ -1,0 +1,53 @@
+<div class="page-header">
+  <h1>My Registered Events</h1>
+  <p>Track the events you've registered to volunteer for.</p>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (registrations.length===0) { %>
+    <p class="hint">
+      You haven't registered for any events yet. <a href="/events">Browse events</a> to get
+      started.
+    </p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% registrations.forEach(function (reg) { %>
+          <tr>
+            <td><a href="/events/<%= reg.event_id %>"><%= reg.title %></a></td>
+            <td><%= reg.category_name %></td>
+            <td><%= formatDate(reg.start_datetime) %></td>
+            <td>
+              <%- include('../../partials/registrationStatusBadge', { regStatus: reg.status==='approved' ? 'registered' : 'cancelled' }) %>
+            </td>
+            <td>
+              <% if (reg.status==='approved' ) { %>
+              <form
+                method="POST"
+                action="/events/<%= reg.event_id %>/cancel"
+                class="inline-form"
+                data-confirm="Cancel your registration for this event?"
+              >
+                <button type="submit" class="btn btn-ghost btn-sm">Cancel</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

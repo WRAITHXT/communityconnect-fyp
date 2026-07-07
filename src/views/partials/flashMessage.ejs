@@ -1,0 +1,6 @@
+<% if (typeof flash !=='undefined' && flash) { %>
+<div class="alert <%= flash.type==='error' ? 'alert-danger' : 'alert-success' %>">
+  <i class="fa-solid <%= flash.type==='error' ? 'fa-circle-exclamation' : 'fa-circle-check' %>"></i>
+  <span><%= flash.message %></span>
+</div>
+<% } %>

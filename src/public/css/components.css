@@ -159,6 +159,11 @@
   color: var(--color-danger);
 }
 
+.badge-neutral {
+  background-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
 /* ---- Avatar ---- */
 
 .avatar {
