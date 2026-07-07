@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const expressLayouts = require('express-ejs-layouts');
 
 const config = require('./config/env');
@@ -11,6 +12,7 @@ const { formatDate } = require('./utils/format');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 const { attachCurrentUser } = require('./middlewares/verifyJwt');
 const { attachFlashFromQuery } = require('./middlewares/flash');
+const { attachCsrfToken, doubleCsrfProtection, handleCsrfError } = require('./middlewares/csrf');
 const webAuthRoutes = require('./routes/web/authRoutes');
 const webDashboardRoutes = require('./routes/web/dashboardRoutes');
 const webEventRoutes = require('./routes/web/eventRoutes');
@@ -39,6 +41,31 @@ app.locals.formatDate = formatDate;
 app.locals.formatTime = (value) =>
   new Date(value).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
+// ---- Secure HTTP headers (Phase 10 hardening) ----
+// Every asset this app ever loads is self-hosted (Font Awesome, Chart.js,
+// this app's own CSS/JS — no CDN dependency anywhere, see docs/PHASE3/9),
+// and no view has an inline <script> or <style> attribute, so the CSP can
+// stay at 'self' everywhere without any 'unsafe-inline'. Placed before
+// express.static so the headers apply to static assets too, not just
+// rendered pages.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+      },
+    },
+  })
+);
+
 // ---- Body parsing, cookies & static assets ----
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -56,8 +83,23 @@ app.use(
 // partials/simpleNav.ejs can render a signed-in nav without every route
 // having to enforce authentication. Does not block unauthenticated
 // requests — routes that must be protected use verifyJwt individually.
+//
+// Registered before the CSRF middlewares below deliberately: every view,
+// including the 403 page CSRF failures render, includes simpleNav/topbar,
+// which reference `currentUser` — if a bad CSRF token were rejected before
+// this ran, res.locals.currentUser would never be set and rendering that
+// very error page would itself throw, turning a clean 403 into a raw 500.
 app.use(attachCurrentUser);
 app.use(attachFlashFromQuery);
+
+// ---- CSRF (Phase 10 hardening) ----
+// attachCsrfToken runs on every request so any page with a POST form has a
+// token to embed; doubleCsrfProtection only actually validates non-GET/HEAD/
+// OPTIONS requests (its default), so GET navigation is unaffected. Both are
+// registered after body-parsing/cookies (needs req.body/req.cookies) and
+// after express.static (asset requests never reach here at all).
+app.use(attachCsrfToken);
+app.use(doubleCsrfProtection);
 
 // Temporary landing route — replaced by the proper MVC routing structure
 // (src/routes) once more modules are implemented.
@@ -87,6 +129,7 @@ app.use('/admin/reports', webAdminReportRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);
+app.use(handleCsrfError);
 app.use(errorHandler);
 
 module.exports = app;

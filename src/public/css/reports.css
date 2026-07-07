@@ -32,3 +32,14 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--space-4);
 }
+
+/* The "Attendance by Event" chart card spans the full grid width and needs
+   spacing above its companion table (see reports/overview.ejs) — pulled out
+   here rather than left as inline styles (Phase 10 UI-consistency review). */
+.chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.chart-card-table {
+  margin-top: var(--space-4);
+}

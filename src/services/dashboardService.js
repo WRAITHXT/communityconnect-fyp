@@ -25,11 +25,17 @@ const USER_DASHBOARD_CARDS = [
 ];
 
 async function getUserDashboardCards(userId) {
-  const upcomingEventsCount = await eventModel.countUpcomingPublished();
-  const myRegistrationsCount = await registrationModel.countApprovedForUser(userId);
-  const totalHours = await attendanceModel.getTotalHoursForUser(userId);
-  const totalDonated = await donationModel.getTotalForUser(userId);
-  const myCertificatesCount = await certificateModel.countForUser(userId);
+  // Independent counts across 5 different tables — run concurrently rather
+  // than sequentially (Phase 10 performance review). Each is its own
+  // connection-pool query, not a chain of dependent lookups.
+  const [upcomingEventsCount, myRegistrationsCount, totalHours, totalDonated, myCertificatesCount] =
+    await Promise.all([
+      eventModel.countUpcomingPublished(),
+      registrationModel.countApprovedForUser(userId),
+      attendanceModel.getTotalHoursForUser(userId),
+      donationModel.getTotalForUser(userId),
+      certificateModel.countForUser(userId),
+    ]);
 
   const liveCards = [
     {
@@ -93,11 +99,14 @@ async function getUserDashboardCards(userId) {
 // Certificates are all real now (every module through Phase 8 is
 // implemented).
 async function getAdminStats() {
-  const totalUsers = await userModel.countUsers();
-  const totalEvents = await eventModel.countAll();
-  const totalVolunteers = await registrationModel.countDistinctActiveVolunteers();
-  const totalDonations = await donationModel.countAll();
-  const totalCertificates = await certificateModel.countAll();
+  const [totalUsers, totalEvents, totalVolunteers, totalDonations, totalCertificates] =
+    await Promise.all([
+      userModel.countUsers(),
+      eventModel.countAll(),
+      registrationModel.countDistinctActiveVolunteers(),
+      donationModel.countAll(),
+      certificateModel.countAll(),
+    ]);
 
   return [
     {

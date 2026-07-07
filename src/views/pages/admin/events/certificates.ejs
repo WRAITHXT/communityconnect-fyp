@@ -49,6 +49,7 @@
                 action="/admin/events/<%= event.id %>/certificates/<%= row.registration_id %>/generate"
                 class="inline-form"
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-primary btn-sm">
                   <i class="fa-solid fa-award"></i> Generate
                 </button>

@@ -16,6 +16,7 @@
 
 <div class="card">
   <form method="POST" action="/admin/donations/<%= donationId %>/update" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <div class="form-group">
       <label class="form-label" for="donationType">Donation Type</label>
       <select class="form-control" id="donationType" name="donationType" required>

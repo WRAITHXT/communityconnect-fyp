@@ -80,6 +80,7 @@
                 class="inline-form"
                 data-confirm="Remove this volunteer's registration?"
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Remove">
                   <i class="fa-solid fa-user-xmark"></i>
                 </button>

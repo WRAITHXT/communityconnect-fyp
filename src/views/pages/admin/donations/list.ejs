@@ -120,6 +120,7 @@
                 class="inline-form"
                 data-confirm="Delete this donation record? This cannot be undone."
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Delete">
                   <i class="fa-solid fa-trash"></i>
                 </button>

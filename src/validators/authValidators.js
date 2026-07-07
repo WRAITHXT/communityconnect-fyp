@@ -14,8 +14,8 @@ const registerValidators = [
     .isLength({ max: 255 })
     .withMessage('Email must be at most 255 characters.'),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters.')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Password must be between 8 and 128 characters.')
     .matches(/[a-z]/)
     .withMessage('Password must include a lowercase letter.')
     .matches(/[A-Z]/)
@@ -29,7 +29,16 @@ const registerValidators = [
 
 const loginValidators = [
   body('email').trim().isEmail().withMessage('A valid email is required.'),
-  body('password').notEmpty().withMessage('Password is required.'),
+  // Only a max length here (not the full complexity rules) — this is a
+  // login, not a password reset; the point is capping the input size before
+  // it reaches bcrypt.compare (an oversized input is wasted, attacker-
+  // controlled hashing work), not re-validating an existing password's
+  // shape.
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required.')
+    .isLength({ max: 128 })
+    .withMessage('Invalid email or password.'),
 ];
 
 module.exports = { registerValidators, loginValidators };

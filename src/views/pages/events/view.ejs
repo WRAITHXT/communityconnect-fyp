@@ -68,6 +68,7 @@
       class="inline-form"
       data-confirm="Cancel your registration for this event?"
     >
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <button type="submit" class="btn btn-danger">
         <i class="fa-solid fa-xmark"></i> Cancel Registration
       </button>
@@ -78,6 +79,7 @@
     <p class="hint">This event has reached its maximum volunteer capacity.</p>
     <% } else { %>
     <form method="POST" action="/events/<%= event.id %>/register" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <button type="submit" class="btn btn-primary">
         <i class="fa-solid fa-clipboard-list"></i> Register to Volunteer
       </button>

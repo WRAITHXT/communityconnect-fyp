@@ -37,6 +37,7 @@
     <% } %>
 
     <form method="POST" action="/verify-certificate" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div class="form-group">
         <label class="form-label" for="certificateNumber">Certificate ID</label>
         <input

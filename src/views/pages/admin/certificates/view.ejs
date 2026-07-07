@@ -8,6 +8,7 @@
         <i class="fa-solid fa-download"></i> Download PDF
       </a>
       <form method="POST" action="/admin/certificates/<%= certificate.id %>/regenerate" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Regenerate</button>
       </form>
       <% if (certificate.status==='active') { %>
@@ -17,6 +18,7 @@
         class="inline-form"
         data-confirm="Revoke this certificate? It will no longer verify as valid."
       >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <button type="submit" class="btn btn-danger"><i class="fa-solid fa-ban"></i> Revoke</button>
       </form>
       <% } %>

@@ -20,6 +20,7 @@
     action="/admin/events/<%= event.id %>/attendance/<%= registrationId %>/edit"
     novalidate
   >
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <div class="form-group">
       <label class="form-label" for="status">Status</label>
       <select class="form-control" id="status" name="status" required>

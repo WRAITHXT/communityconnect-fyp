@@ -1,5 +1,6 @@
 const { verifyAccessToken } = require('../utils/tokenService');
 const userModel = require('../models/userModel');
+const logger = require('../utils/logger');
 const { cookieName } = require('../config/jwt');
 
 // Decodes + validates the JWT from the httpOnly cookie and re-checks it
@@ -21,8 +22,14 @@ async function loadUserFromToken(req) {
 
   const user = await userModel.findById(payload.sub);
   if (!user) return null;
-  if (user.status === 'suspended') return null;
-  if (user.token_version !== payload.tokenVersion) return null;
+  if (user.status === 'suspended') {
+    logger.warn(`Rejected token for suspended account - id=${user.id} ip=${req.ip}`);
+    return null;
+  }
+  if (user.token_version !== payload.tokenVersion) {
+    logger.warn(`Rejected stale/revoked token - id=${user.id} ip=${req.ip}`);
+    return null;
+  }
 
   return user;
 }

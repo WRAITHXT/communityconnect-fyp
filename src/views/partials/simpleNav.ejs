@@ -8,6 +8,7 @@
     <% if (currentUser) { %>
     <a href="/dashboard" class="btn btn-ghost btn-sm">Dashboard</a>
     <form method="POST" action="/logout" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <button type="submit" class="btn btn-secondary btn-sm">Log Out</button>
     </form>
     <% } else { %>

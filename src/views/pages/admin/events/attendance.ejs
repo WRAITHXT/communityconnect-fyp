@@ -76,6 +76,7 @@
                 action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/check-in"
                 class="inline-form"
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Check In">
                   <i class="fa-solid fa-right-to-bracket"></i>
                 </button>
@@ -85,6 +86,7 @@
                 action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/mark-present"
                 class="inline-form"
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Mark Present">
                   <i class="fa-solid fa-check"></i>
                 </button>
@@ -94,6 +96,7 @@
                 action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/mark-absent"
                 class="inline-form"
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Mark Absent">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -105,6 +108,7 @@
                 action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/check-out"
                 class="inline-form"
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Check Out">
                   <i class="fa-solid fa-right-from-bracket"></i>
                 </button>

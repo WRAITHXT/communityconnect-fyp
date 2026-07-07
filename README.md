@@ -12,8 +12,9 @@ Attendance Tracking details and how to test it: [docs/PHASE6_ATTENDANCE_TRACKING
 Donation Management details and how to test it: [docs/PHASE7_DONATION_MANAGEMENT.md](docs/PHASE7_DONATION_MANAGEMENT.md).
 Certificate Generation details and how to test it: [docs/PHASE8_CERTIFICATE_GENERATION.md](docs/PHASE8_CERTIFICATE_GENERATION.md).
 Reports & Analytics details and how to test it: [docs/PHASE9_REPORTS_ANALYTICS.md](docs/PHASE9_REPORTS_ANALYTICS.md).
+Final security/performance/testing review: [docs/PHASE10_FINAL_SECURITY_AND_TESTING.md](docs/PHASE10_FINAL_SECURITY_AND_TESTING.md).
 
-**Status**: Phase 9 — Reports & Analytics implemented (9-stat overview with 5 Chart.js charts, four filterable reports — Event/Volunteer/Donation/Certificate — each exportable as CSV and PDF). Notifications is the only module not implemented yet (its dashboard/sidebar entries remain placeholders).
+**Status**: Phase 10 — Final Security, Validation, Performance Review & System Testing complete. Every module (Authentication through Reports & Analytics) has been security-hardened (Helmet + strict CSP, CSRF protection, rate limiting, JWT algorithm pinning, security-event logging), performance-reviewed, and re-verified end-to-end. The application is feature-complete except Notifications (its dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -31,6 +32,10 @@ Visit `http://localhost:3000` — you should see "CommunityConnect server is run
 
 The server itself still starts without PostgreSQL, but most routes now query the database — create
 one and point `DATABASE_URL` in `.env` at it, then run migrations/seed, before using the app.
+
+**`JWT_SECRET` and `CSRF_SECRET` are required** — the app fails fast at startup (a clear error, not
+a silent fallback) if either is missing or under 32 characters. Generate strong values with:
+`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 
 ## Scripts
 
@@ -72,8 +77,8 @@ src/
                       attendanceRoutes.js, donationRoutes.js, adminDonationRoutes.js, certificateRoutes.js,
                       adminCertificateRoutes.js, certificateVerifyRoutes.js, adminReportRoutes.js
     api/             # empty*
-  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js (all active);
-                     csrf.js is still a placeholder*
+  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js,
+                     csrf.js, rateLimiter.js (all active)
   validators/       # authValidators.js, eventValidators.js, donationValidators.js, certificateValidators.js (active)
   views/
     layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
@@ -94,7 +99,7 @@ src/
 database/
   migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status
                           update + attendance check-in/check-out columns + donations reshape + certificates reshape
-                          + certificate_verification_logs table
+                          + certificate_verification_logs table + event_registrations.applied_at index
   seeders/               # 001-initial-seed.js (1 admin, 2 users, 3 categories)
 tests/
   unit/ integration/ e2e/
@@ -110,7 +115,8 @@ docs/
   PHASE7_DONATION_MANAGEMENT.md         # schema change, what was built, design notes, full test instructions
   PHASE8_CERTIFICATE_GENERATION.md        # schema change, what was built, design notes, full test instructions
   PHASE9_REPORTS_ANALYTICS.md               # schema change, what was built, design notes, bugs found & fixed, full test instructions
-  API.md                                      # filled in as API routes are (re-)added
+  PHASE10_FINAL_SECURITY_AND_TESTING.md       # security/performance/validation review, bugs found & fixed, full E2E test results
+  API.md                                        # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -320,6 +326,49 @@ docs/
   CSV and PDF export for all 4 reports (including empty-result cases), RBAC, and graceful error
   handling for malformed filters
 
+**Phase 10 — Final Security, Validation, Performance Review & System Testing**
+
+No new business features — a full review and hardening pass across every existing module, plus
+end-to-end re-verification of the whole application.
+
+- **Security**: JWT `algorithms` explicitly pinned to `HS256` on both sign and verify (defense
+  against algorithm-confusion); startup validation fails fast if `JWT_SECRET`/`CSRF_SECRET` are
+  missing or under 32 characters; password fields gained a max length (128 chars — a cheap,
+  unauthenticated bcrypt-CPU-exhaustion vector otherwise); `verifyCertificateValidators` gained
+  max lengths matching their DB columns; **Helmet** added with a strict Content-Security-Policy
+  (`'self'` on every directive, no `unsafe-inline` — every asset in this app is self-hosted and no
+  view has inline scripts/styles); **`express-rate-limit`** added on login/register (10/15min) and
+  the public certificate-verification endpoint (30/15min); **CSRF protection** added
+  (`csrf-csrf`, double-submit-cookie pattern, scoped to the caller's JWT) across all 27 POST forms
+  in the app; security-event logging added (login/registration/logout success and failure, RBAC
+  denials, suspended/stale-token rejections, CSRF failures, rate-limit trips) — none of it logs
+  passwords or tokens. SQL injection, XSS, and file-upload safety were all re-audited and found
+  already sound from prior phases — no changes needed there.
+- **Performance**: `dashboardService`'s independent count queries now run concurrently via
+  `Promise.all` instead of sequentially; added a missing index on
+  `event_registrations.applied_at` (used by Phase 9's Reports queries but never indexed since
+  Phase 1). No N+1 queries were found anywhere in the app.
+- **UI consistency**: reviewed navigation/sidebar/topbar/cards/buttons/tables/forms/alerts/badges/
+  responsive layout across every page — found and fixed the one inconsistency (two inline
+  `style="..."` attributes in the Reports Overview page, moved into `reports.css` classes).
+- **One real bug found and fixed this session**: submitting a form with a missing/invalid CSRF
+  token 500'd instead of showing a graceful 403 — `attachCurrentUser` (which every page's nav
+  partial depends on) was registered _after_ the CSRF middleware in `app.js`, so the 403 error
+  page itself crashed rendering. Fixed by reordering the middleware chain. Full details in
+  `docs/PHASE10_FINAL_SECURITY_AND_TESTING.md`.
+- **Verified end-to-end**: the complete user workflow (register → login → browse events → register
+  for event → attendance → volunteer hours → donation → certificate → logout) and the complete
+  administrator workflow (login → create event → publish → manage volunteers → attendance →
+  manage donations → generate certificates → reports → logout), both re-run against the live app
+  and live database with CSRF protection active throughout; RBAC re-confirmed on every admin route;
+  rate limiting and the new security headers confirmed live via real HTTP responses; the
+  heaviest client-rendered page (Reports, 5 Chart.js charts) re-verified in a real headless
+  browser with zero console errors under the new CSP.
+
 ## Explicitly Not Yet Implemented
 
-Notifications. This follows the phased roadmap in `docs/PROJECT_BLUEPRINT.md`.
+Notifications. This follows the phased roadmap in `docs/PROJECT_BLUEPRINT.md`. Two smaller,
+deliberate and documented trade-offs remain (see `docs/PHASE10_FINAL_SECURITY_AND_TESTING.md`):
+logout doesn't revoke the JWT itself (only `token_version`-based "logout everywhere" would, which
+this app was never asked to build), and there's no CORS configuration (correctly unneeded for a
+same-origin, server-rendered app with no cross-origin API consumer).

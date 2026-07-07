@@ -69,6 +69,7 @@
                 <i class="fa-solid fa-eye"></i>
               </a>
               <form method="POST" action="/admin/certificates/<%= c.id %>/regenerate" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Regenerate">
                   <i class="fa-solid fa-rotate"></i>
                 </button>
@@ -80,6 +81,7 @@
                 class="inline-form"
                 data-confirm="Revoke this certificate? It will no longer verify as valid."
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Revoke">
                   <i class="fa-solid fa-ban"></i>
                 </button>

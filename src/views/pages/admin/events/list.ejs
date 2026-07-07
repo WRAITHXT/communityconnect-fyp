@@ -80,6 +80,7 @@
               </a>
               <% if (event.status !=='published' ) { %>
               <form method="POST" action="/admin/events/<%= event.id %>/status" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="status" value="published" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Publish">
                   <i class="fa-solid fa-check"></i>
@@ -87,6 +88,7 @@
               </form>
               <% } else { %>
               <form method="POST" action="/admin/events/<%= event.id %>/status" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="status" value="draft" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Unpublish">
                   <i class="fa-solid fa-eye-slash"></i>
@@ -99,6 +101,7 @@
                 class="inline-form"
                 data-confirm="Delete this event? This cannot be undone."
               >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-ghost btn-sm" title="Delete">
                   <i class="fa-solid fa-trash"></i>
                 </button>
