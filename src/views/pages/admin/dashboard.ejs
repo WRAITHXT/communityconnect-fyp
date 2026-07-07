@@ -15,12 +15,17 @@
 <section class="dashboard-section">
   <h2 class="section-title">Quick Actions</h2>
   <div class="quick-actions">
-    <% quickActions.forEach(function (action) { %>
+    <% quickActions.forEach(function (action) { %> <% if (action.href) { %>
+    <a href="<%= action.href %>" class="btn btn-secondary">
+      <i class="<%= action.icon %>"></i>
+      <%= action.label %>
+    </a>
+    <% } else { %>
     <button type="button" class="btn btn-secondary" disabled title="Coming soon">
       <i class="<%= action.icon %>"></i>
       <%= action.label %>
       <span class="badge badge-soft">Soon</span>
     </button>
-    <% }); %>
+    <% } %> <% }); %>
   </div>
 </section>

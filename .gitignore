@@ -19,3 +19,6 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# User-uploaded files (created at runtime by src/middlewares/upload.js)
+src/public/uploads/

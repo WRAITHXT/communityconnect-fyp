@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h1><%= event.title %></h1>
+  <p>
+    <span class="badge badge-soft"><%= event.category_name %></span>
+    &middot;
+    <span class="badge <%= event.status==='published' ? 'badge-success' : '' %>"><%= event.status %></span>
+  </p>
+</div>
+
+<% if (event.banner_image_key) { %>
+<img src="<%= getBannerUrl(event.banner_image_key) %>" alt="<%= event.title %> banner" class="hero-image" />
+<% } %>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Event Details</h2>
+    </div>
+    <div class="profile-summary-grid">
+      <div>
+        <p class="profile-summary-label">Venue</p>
+        <p class="profile-summary-value"><%= event.location %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Date</p>
+        <p class="profile-summary-value"><%= formatDate(event.start_datetime) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Time</p>
+        <p class="profile-summary-value">
+          <%= formatTime(event.start_datetime) %> &ndash; <%= formatTime(event.end_datetime) %>
+        </p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Registration Deadline</p>
+        <p class="profile-summary-value"><%= formatDate(event.registration_deadline) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Remaining Slots</p>
+        <p class="profile-summary-value"><%= Math.max(0, event.remaining_slots) %> / <%= event.capacity %></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Description</h2>
+    </div>
+    <p><%= event.description %></p>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <button type="button" class="btn btn-primary" disabled title="Coming soon">
+    <i class="fa-solid fa-clipboard-list"></i> Register to Volunteer
+    <span class="badge badge-soft">Soon</span>
+  </button>
+</section>

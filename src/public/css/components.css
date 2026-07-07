@@ -295,6 +295,62 @@
   background-color: var(--color-bg);
 }
 
+.table-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ---- Multi-field form rows (ready for any module's forms) ---- */
+
+.form-row {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 160px;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* ---- Image previews (banner uploads now, profile photos etc. later) ---- */
+
+.banner-preview {
+  display: block;
+  margin-top: var(--space-3);
+  max-height: 120px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.hero-image {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}
+
+/* ---- Filter/search bars (ready for any module's list pages) ---- */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.filter-bar .form-control {
+  flex: 1;
+  min-width: 160px;
+}
+
 .table tbody tr:last-child td {
   border-bottom: none;
 }

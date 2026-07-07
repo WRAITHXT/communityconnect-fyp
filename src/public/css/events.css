@@ -1,0 +1,39 @@
+/*
+  Event Management-specific visual treatment. Generic, reusable patterns
+  (form rows, filter bars, table action groups, image previews) live in
+  components.css instead — this file only holds what's specific to how
+  events are displayed, per the "organize CSS into reusable files" rule.
+*/
+
+.event-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.event-card-banner {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.event-card-banner-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg);
+  color: var(--color-text-subtle);
+  font-size: 1.75rem;
+}
+
+.event-card-title {
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.event-card-meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-top: var(--space-1);
+}

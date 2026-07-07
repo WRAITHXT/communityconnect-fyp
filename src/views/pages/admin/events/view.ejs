@@ -1,0 +1,77 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1><%= event.title %></h1>
+      <p>
+        <span
+          class="badge <%= event.status==='published' ? 'badge-success' : event.status==='draft' ? 'badge-warning' : '' %>"
+        >
+          <%= event.status %>
+        </span>
+        &middot; <%= event.category_name %>
+      </p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/events/<%= event.id %>/edit" class="btn btn-secondary">
+        <i class="fa-solid fa-pen"></i> Edit
+      </a>
+      <form
+        method="POST"
+        action="/admin/events/<%= event.id %>/delete"
+        class="inline-form"
+        data-confirm="Delete this event? This cannot be undone."
+      >
+        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<% if (event.banner_image_key) { %>
+<img src="<%= getBannerUrl(event.banner_image_key) %>" alt="<%= event.title %> banner" class="hero-image" />
+<% } %>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Details</h2>
+    </div>
+    <div class="profile-summary-grid">
+      <div>
+        <p class="profile-summary-label">Venue</p>
+        <p class="profile-summary-value"><%= event.location %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Date</p>
+        <p class="profile-summary-value"><%= formatDate(event.start_datetime) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Time</p>
+        <p class="profile-summary-value">
+          <%= formatTime(event.start_datetime) %> &ndash; <%= formatTime(event.end_datetime) %>
+        </p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Registration Deadline</p>
+        <p class="profile-summary-value"><%= formatDate(event.registration_deadline) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Capacity</p>
+        <p class="profile-summary-value"><%= event.capacity %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Remaining Slots</p>
+        <p class="profile-summary-value"><%= Math.max(0, event.remaining_slots) %></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Description</h2>
+    </div>
+    <p><%= event.description %></p>
+  </div>
+</section>

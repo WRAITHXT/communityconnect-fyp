@@ -1,9 +1,21 @@
-<div class="card card-hover">
-  <div class="card-header">
-    <div class="dash-card-icon"><i class="<%= card.icon %>"></i></div>
-    <span class="badge badge-soft"><%= card.status %></span>
-  </div>
-  <h3 class="card-title"><%= card.title %></h3>
-  <p class="dash-card-value"><%= card.value %></p>
-  <p class="dash-card-description"><%= card.description %></p>
+<% if (card.href) { %>
+<a href="<%= card.href %>" class="card card-hover event-card">
+<% } else { %>
+<div class="card">
+<% } %>
+
+<div class="card-header">
+  <div class="dash-card-icon"><i class="<%= card.icon %>"></i></div>
+  <% if (card.status) { %>
+  <span class="badge badge-soft"><%= card.status %></span>
+  <% } %>
 </div>
+<h3 class="card-title"><%= card.title %></h3>
+<p class="dash-card-value"><%= card.value %></p>
+<p class="dash-card-description"><%= card.description %></p>
+
+<% if (card.href) { %>
+</a>
+<% } else { %>
+</div>
+<% } %>

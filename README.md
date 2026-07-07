@@ -6,8 +6,9 @@ Full architecture, feature scope, roles, roadmap, and security design: [docs/PRO
 Database schema details: [docs/PHASE1_DATABASE.md](docs/PHASE1_DATABASE.md) and [docs/ERD.md](docs/ERD.md).
 Authentication details and how to test it: [docs/PHASE2_AUTHENTICATION.md](docs/PHASE2_AUTHENTICATION.md).
 Dashboard module details and how to test it: [docs/PHASE3_DASHBOARD.md](docs/PHASE3_DASHBOARD.md).
+Event Management details and how to test it: [docs/PHASE4_EVENT_MANAGEMENT.md](docs/PHASE4_EVENT_MANAGEMENT.md).
 
-**Status**: Phase 3 — User Dashboard and Admin Dashboard implemented on top of Authentication/RBAC. Event Management, Volunteer Registration, Attendance, Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard cards/stats are placeholders).
+**Status**: Phase 4 — Event Management implemented (full CRUD, publish/unpublish, banner uploads, search/filter, RBAC). Volunteer Registration, Attendance, Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -23,9 +24,8 @@ npm run dev
 
 Visit `http://localhost:3000` — you should see "CommunityConnect server is running".
 
-The server itself still starts without PostgreSQL (the app doesn't query the database yet), but
-the commands below now need a real PostgreSQL database — create one and point `DATABASE_URL` in
-`.env` at it before running migrations/seed.
+The server itself still starts without PostgreSQL, but most routes now query the database — create
+one and point `DATABASE_URL` in `.env` at it, then run migrations/seed, before using the app.
 
 ## Scripts
 
@@ -48,31 +48,32 @@ commands.
 
 ```
 src/
-  config/        # env.js, db.js (pg Pool), jwt.js (active), navigation.js (sidebar nav data), constants.js*
-  models/        # userModel.js (active, incl. countUsers()); more models arrive with each future module
-  services/       # authService.js, dashboardService.js (active); more arrive with each future module
+  config/        # env.js, db.js (pg Pool), jwt.js, navigation.js (sidebar nav data, active), constants.js*
+  models/        # userModel.js, eventModel.js, eventCategoryModel.js (active); more arrive with each future module
+  services/       # authService.js, dashboardService.js, eventService.js (active); more arrive with each future module
   controllers/
-    web/           # authController.js, dashboardController.js (active) — render EJS views
+    web/           # authController.js, dashboardController.js, eventController.js, adminEventController.js — render EJS views
     api/            # empty — no active API routes right now*
   routes/
-    web/            # authRoutes.js, dashboardRoutes.js (active)
+    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js (active)
     api/             # empty*
-  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js (all active);
-                     upload.js/csrf.js are still placeholders*
-  validators/       # authValidators.js (active)
+  middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js (all active);
+                     csrf.js is still a placeholder*
+  validators/       # authValidators.js, eventValidators.js (active)
   views/
     layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
     partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs,
                         dashboard/statCard.ejs, dashboard/placeholderCard.ejs
-    pages/             # auth/ (active), dashboard/ (active), admin/ (active), pages/<other features>
+    pages/             # auth/, dashboard/, admin/ (incl. admin/events/), events/ (active), pages/<other features>
   public/
-    css/               # base.css, layout.css, components.css, dashboard.css, auth.css — the design system
-    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting)
+    css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css — the design system
+    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm)
     vendor/fontawesome/  # self-hosted Font Awesome (CSS + one woff2), no CDN dependency
-  utils/              # logger.js, tokenService.js, format.js (active); storage/mailer/pdfGenerator/csvExporter are placeholders*
+    uploads/events/       # event banner images (gitignored, created at runtime by middlewares/upload.js)
+  utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js (active); mailer/pdfGenerator/csvExporter are placeholders*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
-  migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger function
+  migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status update
   seeders/               # 001-initial-seed.js (1 admin, 2 users, 3 categories)
 tests/
   unit/ integration/ e2e/
@@ -82,7 +83,8 @@ docs/
   ERD.md                    # entity-relationship diagram (Mermaid)
   PHASE2_AUTHENTICATION.md  # what was built, how JWT/RBAC work, full test instructions
   PHASE3_DASHBOARD.md        # design system + dashboard module, design notes, full test instructions
-  API.md                     # filled in as API routes are (re-)added
+  PHASE4_EVENT_MANAGEMENT.md  # schema change, what was built, design notes, full test instructions
+  API.md                       # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -140,8 +142,26 @@ docs/
   `/login`, logout properly de-authenticates (tested with a real cookie jar) — see
   `docs/PHASE3_DASHBOARD.md`
 
+**Phase 4 — Event Management**
+
+- Schema evolution (new migration, not an edit to the Phase 1 one): `registration_deadline` column
+  added; `status` narrowed to `draft`/`published`/`closed` per this phase's explicit instructions
+- Admin: full CRUD, publish/unpublish, banner image upload (`multer`, self-hosted, 2MB/JPEG-PNG-WEBP
+  whitelist, server-generated filenames), search + category + status filters on the management table
+- Users: read-only browse (card grid) with search/category/date/status filters, event detail page,
+  live remaining-volunteer-slots — all gated to `published`/`closed` events only, enforced at the
+  database query level so a manipulated filter can never leak draft events
+- Sidebar's "Upcoming Events"/"Manage Events" links are now real; User Dashboard's "Upcoming
+  Events" card and Admin Dashboard's "Total Events" stat and "Create Event" quick action are now
+  live, the same way "Total Users" became live once Authentication existed
+- Verified end-to-end: RBAC (403 for non-admins on every admin route), full CRUD including banner
+  upload/replacement/cleanup-on-delete, draft-vs-published visibility rules, all filters, and
+  input validation (missing fields, bad date ordering, invalid category, bad/oversized banner
+  files) — a real bug (validation re-renders returning `200` instead of `400`) was found and fixed
+  during this session — see `docs/PHASE4_EVENT_MANAGEMENT.md`
+
 ## Explicitly Not Yet Implemented
 
-Event Management, Volunteer Registration, Attendance Tracking, Donation Recording, Certificate
-Generation, Notifications, Reports. These follow the phased roadmap in
-`docs/PROJECT_BLUEPRINT.md`, starting with Event Management next.
+Volunteer Registration, Attendance Tracking, Donation Recording, Certificate Generation,
+Notifications, Reports. These follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`, starting
+with Volunteer Registration next.

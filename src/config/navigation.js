@@ -10,7 +10,7 @@ const userNavItems = [
     key: 'events',
     label: 'Upcoming Events',
     icon: 'fa-solid fa-calendar-days',
-    href: null,
+    href: '/events',
   },
   {
     key: 'registrations',
@@ -31,7 +31,12 @@ const userNavItems = [
 
 const adminNavItems = [
   { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/admin/dashboard' },
-  { key: 'events', label: 'Manage Events', icon: 'fa-solid fa-calendar-days', href: null },
+  {
+    key: 'events',
+    label: 'Manage Events',
+    icon: 'fa-solid fa-calendar-days',
+    href: '/admin/events',
+  },
   {
     key: 'registrations',
     label: 'Volunteer Registrations',

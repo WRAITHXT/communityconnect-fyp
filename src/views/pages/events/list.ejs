@@ -1,0 +1,58 @@
+<div class="page-header">
+  <h1>Events</h1>
+  <p>Browse and discover upcoming community events.</p>
+</div>
+
+<div class="card">
+  <form method="GET" action="/events" class="filter-bar">
+    <input
+      class="form-control"
+      type="text"
+      name="search"
+      placeholder="Search events&hellip;"
+      value="<%= filters.search %>"
+    />
+    <select class="form-control" name="categoryId">
+      <option value="">All Categories</option>
+      <% categories.forEach(function (cat) { %>
+      <option value="<%= cat.id %>" <%= String(filters.categoryId)===String(cat.id) ? 'selected' : '' %>>
+        <%= cat.name %>
+      </option>
+      <% }); %>
+    </select>
+    <input class="form-control" type="date" name="date" value="<%= filters.date %>" />
+    <select class="form-control" name="status">
+      <option value="">All</option>
+      <option value="published" <%= filters.status==='published' ? 'selected' : '' %>>Open</option>
+      <option value="closed" <%= filters.status==='closed' ? 'selected' : '' %>>Closed</option>
+    </select>
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/events" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <% if (events.length===0) { %>
+  <div class="card">
+    <p class="hint">No events match your search.</p>
+  </div>
+  <% } else { %>
+  <div class="dashboard-grid">
+    <% events.forEach(function (event) { %>
+    <a href="/events/<%= event.id %>" class="card card-hover event-card">
+      <% if (event.banner_image_key) { %>
+      <img src="<%= getBannerUrl(event.banner_image_key) %>" alt="" class="event-card-banner" />
+      <% } else { %>
+      <div class="event-card-banner event-card-banner-placeholder">
+        <i class="fa-solid fa-calendar-days"></i>
+      </div>
+      <% } %>
+      <span class="badge badge-soft"><%= event.category_name %></span>
+      <h3 class="card-title event-card-title"><%= event.title %></h3>
+      <p class="event-card-meta"><%= formatDate(event.start_datetime) %> &middot; <%= event.location %></p>
+      <p class="event-card-meta"><%= Math.max(0, event.remaining_slots) %> slots remaining</p>
+    </a>
+    <% }); %>
+  </div>
+  <% } %>
+</section>

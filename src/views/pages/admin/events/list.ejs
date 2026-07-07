@@ -1,0 +1,114 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Manage Events</h1>
+      <p>Create, edit, publish, and manage community events.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/events/create" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Create Event
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="GET" action="/admin/events" class="filter-bar">
+    <input
+      class="form-control"
+      type="text"
+      name="search"
+      placeholder="Search by title&hellip;"
+      value="<%= filters.search %>"
+    />
+    <select class="form-control" name="categoryId">
+      <option value="">All Categories</option>
+      <% categories.forEach(function (cat) { %>
+      <option value="<%= cat.id %>" <%= String(filters.categoryId)===String(cat.id) ? 'selected' : '' %>>
+        <%= cat.name %>
+      </option>
+      <% }); %>
+    </select>
+    <select class="form-control" name="status">
+      <option value="">All Statuses</option>
+      <option value="draft" <%= filters.status==='draft' ? 'selected' : '' %>>Draft</option>
+      <option value="published" <%= filters.status==='published' ? 'selected' : '' %>>Published</option>
+      <option value="closed" <%= filters.status==='closed' ? 'selected' : '' %>>Closed</option>
+    </select>
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/admin/events" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (events.length===0) { %>
+    <p class="hint">No events match your filters.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% events.forEach(function (event) { %>
+          <tr>
+            <td><%= event.title %></td>
+            <td><%= event.category_name %></td>
+            <td><%= formatDate(event.start_datetime) %></td>
+            <td><%= event.capacity %></td>
+            <td>
+              <span
+                class="badge <%= event.status==='published' ? 'badge-success' : event.status==='draft' ? 'badge-warning' : '' %>"
+              >
+                <%= event.status %>
+              </span>
+            </td>
+            <td class="table-actions">
+              <a href="/admin/events/<%= event.id %>" class="btn btn-ghost btn-sm" title="View">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+              <a href="/admin/events/<%= event.id %>/edit" class="btn btn-ghost btn-sm" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+              <% if (event.status !=='published' ) { %>
+              <form method="POST" action="/admin/events/<%= event.id %>/status" class="inline-form">
+                <input type="hidden" name="status" value="published" />
+                <button type="submit" class="btn btn-ghost btn-sm" title="Publish">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              </form>
+              <% } else { %>
+              <form method="POST" action="/admin/events/<%= event.id %>/status" class="inline-form">
+                <input type="hidden" name="status" value="draft" />
+                <button type="submit" class="btn btn-ghost btn-sm" title="Unpublish">
+                  <i class="fa-solid fa-eye-slash"></i>
+                </button>
+              </form>
+              <% } %>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/delete"
+                class="inline-form"
+                data-confirm="Delete this event? This cannot be undone."
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

@@ -1,18 +1,14 @@
 const userModel = require('../models/userModel');
+const eventModel = require('../models/eventModel');
 
-// All six cards are placeholder content by design (see Phase 3 instructions)
-// — real data arrives with each feature module (Event Management, Volunteer
-// Registration, Donation Recording, Certificate Generation, Notifications).
 // Icons match the sidebar entries in src/config/navigation.js for the same
-// concept, so the two stay visually tied together.
-// See docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order.
+// concept, so the two stay visually tied together. Cards/stats tied to a
+// module that isn't implemented yet stay static placeholders
+// (value: '—', status: 'Coming soon') until that module lands — see
+// docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order. "Upcoming
+// Events" (user) and "Total Events" (admin) below are now live, since Event
+// Management is implemented as of Phase 4.
 const USER_DASHBOARD_CARDS = [
-  {
-    key: 'upcomingEvents',
-    title: 'Upcoming Events',
-    description: 'Browse and register for upcoming community events.',
-    icon: 'fa-solid fa-calendar-days',
-  },
   {
     key: 'myRegistrations',
     title: 'My Event Registrations',
@@ -45,14 +41,35 @@ const USER_DASHBOARD_CARDS = [
   },
 ];
 
-function getUserDashboardCards() {
-  return USER_DASHBOARD_CARDS.map((card) => ({ ...card, value: '—', status: 'Coming soon' }));
+async function getUserDashboardCards() {
+  const upcomingEventsCount = await eventModel.countUpcomingPublished();
+
+  const liveCard = {
+    key: 'upcomingEvents',
+    title: 'Upcoming Events',
+    description: 'Browse and register for upcoming community events.',
+    icon: 'fa-solid fa-calendar-days',
+    value: String(upcomingEventsCount),
+    status: null,
+    href: '/events',
+  };
+
+  const placeholderCards = USER_DASHBOARD_CARDS.map((card) => ({
+    ...card,
+    value: '—',
+    status: 'Coming soon',
+    href: null,
+  }));
+
+  return [liveCard, ...placeholderCards];
 }
 
-// Total Users is real (the Authentication module already exists). The rest
-// stay placeholders until their respective modules are implemented.
+// Total Users and Total Events are real (Authentication and Event
+// Management are both implemented). The rest stay placeholders until their
+// respective modules are implemented.
 async function getAdminStats() {
   const totalUsers = await userModel.countUsers();
+  const totalEvents = await eventModel.countAll();
 
   return [
     {
@@ -65,8 +82,8 @@ async function getAdminStats() {
     {
       key: 'totalEvents',
       label: 'Total Events',
-      value: '—',
-      isLive: false,
+      value: totalEvents,
+      isLive: true,
       icon: 'fa-solid fa-calendar-days',
     },
     {
@@ -93,19 +110,35 @@ async function getAdminStats() {
   ];
 }
 
-// Disabled by design — each action belongs to a module that isn't
-// implemented yet.
+// "Create Event" is now a real action (Event Management is implemented).
+// The rest remain disabled until their modules exist.
 function getAdminQuickActions() {
   return [
-    { key: 'createEvent', label: 'Create Event', icon: 'fa-solid fa-plus' },
-    { key: 'approveRegistrations', label: 'Approve Registrations', icon: 'fa-solid fa-check' },
+    {
+      key: 'createEvent',
+      label: 'Create Event',
+      icon: 'fa-solid fa-plus',
+      href: '/admin/events/create',
+    },
+    {
+      key: 'approveRegistrations',
+      label: 'Approve Registrations',
+      icon: 'fa-solid fa-check',
+      href: null,
+    },
     {
       key: 'recordDonation',
       label: 'Record Donation',
       icon: 'fa-solid fa-hand-holding-heart',
+      href: null,
     },
-    { key: 'generateCertificate', label: 'Generate Certificate', icon: 'fa-solid fa-award' },
-    { key: 'viewReports', label: 'View Reports', icon: 'fa-solid fa-chart-line' },
+    {
+      key: 'generateCertificate',
+      label: 'Generate Certificate',
+      icon: 'fa-solid fa-award',
+      href: null,
+    },
+    { key: 'viewReports', label: 'View Reports', icon: 'fa-solid fa-chart-line', href: null },
   ];
 }
 

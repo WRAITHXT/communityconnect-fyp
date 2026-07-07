@@ -64,9 +64,23 @@ function initGreeting() {
   greeting.textContent = greeting.textContent.replace(/^Welcome,/, 'Good ' + timeOfDay + ',');
 }
 
+// Confirmation prompt for destructive actions (e.g. deleting an event) —
+// any <form data-confirm="..."> gets a native confirm() dialog before it
+// submits. Reusable by any future module's delete forms.
+function initConfirmForms() {
+  document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      if (!window.confirm(form.getAttribute('data-confirm'))) {
+        event.preventDefault();
+      }
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   initSidebarCollapse();
   initMobileSidebar();
   initUserMenu();
   initGreeting();
+  initConfirmForms();
 });
