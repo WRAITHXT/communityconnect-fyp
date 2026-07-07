@@ -18,6 +18,9 @@ const webRegistrationRoutes = require('./routes/web/registrationRoutes');
 const webAttendanceRoutes = require('./routes/web/attendanceRoutes');
 const webDonationRoutes = require('./routes/web/donationRoutes');
 const webAdminDonationRoutes = require('./routes/web/adminDonationRoutes');
+const webCertificateRoutes = require('./routes/web/certificateRoutes');
+const webAdminCertificateRoutes = require('./routes/web/adminCertificateRoutes');
+const webCertificateVerifyRoutes = require('./routes/web/certificateVerifyRoutes');
 
 const app = express();
 
@@ -62,6 +65,14 @@ app.get('/', (req, res) => {
 });
 
 app.use('/', webAuthRoutes);
+// Registered here — before any router below with a blanket router.use(verifyJwt)
+// (events/registrations/attendance/donations/certificates all have one) —
+// so an unauthenticated visitor's request for the public verification page
+// is handled here first, instead of being redirected to /login by one of
+// those routers before it ever reaches this one. Same class of mount-order
+// issue as the Phase 5 admin-router lesson, just for a public route instead
+// of an admin one.
+app.use('/', webCertificateVerifyRoutes);
 app.use('/', webDashboardRoutes);
 app.use('/', webEventRoutes);
 app.use('/admin/events', webAdminEventRoutes);
@@ -69,6 +80,8 @@ app.use('/', webRegistrationRoutes);
 app.use('/', webAttendanceRoutes);
 app.use('/', webDonationRoutes);
 app.use('/admin/donations', webAdminDonationRoutes);
+app.use('/', webCertificateRoutes);
+app.use('/admin/certificates', webAdminCertificateRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

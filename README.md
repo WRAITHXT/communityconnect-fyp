@@ -10,8 +10,9 @@ Event Management details and how to test it: [docs/PHASE4_EVENT_MANAGEMENT.md](d
 Volunteer Registration details and how to test it: [docs/PHASE5_VOLUNTEER_REGISTRATION.md](docs/PHASE5_VOLUNTEER_REGISTRATION.md).
 Attendance Tracking details and how to test it: [docs/PHASE6_ATTENDANCE_TRACKING.md](docs/PHASE6_ATTENDANCE_TRACKING.md).
 Donation Management details and how to test it: [docs/PHASE7_DONATION_MANAGEMENT.md](docs/PHASE7_DONATION_MANAGEMENT.md).
+Certificate Generation details and how to test it: [docs/PHASE8_CERTIFICATE_GENERATION.md](docs/PHASE8_CERTIFICATE_GENERATION.md).
 
-**Status**: Phase 7 — Donation Management implemented (record/history/detail, admin search/filter/edit/delete, statistics, summary by type, colored status badges). Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
+**Status**: Phase 8 — Certificate Generation implemented (eligible-volunteer generation, regenerate, revoke, PDF download, public verification page, admin search/filter, colored status badges). Notifications and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -44,6 +45,9 @@ one and point `DATABASE_URL` in `.env` at it, then run migrations/seed, before u
 | `npm run migrate:create -- <name>` | Scaffold a new empty migration file                            |
 | `npm run seed`                     | Insert the Phase 1 seed data (1 admin, 2 users, 3 categories)  |
 
+`pdfkit` renders certificate PDFs directly to the HTTP response — no native/binary dependency, no
+files written to disk.
+
 See [docs/PHASE1_DATABASE.md](docs/PHASE1_DATABASE.md) for full details on the schema and these
 commands.
 
@@ -53,37 +57,38 @@ commands.
 src/
   config/        # env.js, db.js (pg Pool), jwt.js, navigation.js (sidebar nav data, active), constants.js*
   models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js, attendanceModel.js,
-                   donationModel.js (active)
+                   donationModel.js, certificateModel.js (active)
   services/       # authService.js, dashboardService.js, eventService.js, registrationService.js,
-                    attendanceService.js, donationService.js (active)
+                    attendanceService.js, donationService.js, certificateService.js (active)
   controllers/
     web/           # auth/dashboard/event/adminEvent/registration/adminRegistration/attendance/adminAttendance/
-                     donation/adminDonation controllers
+                     donation/adminDonation/certificate/adminCertificate/certificateVerify controllers
     api/            # empty — no active API routes right now*
   routes/
     web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js,
-                      attendanceRoutes.js, donationRoutes.js, adminDonationRoutes.js
+                      attendanceRoutes.js, donationRoutes.js, adminDonationRoutes.js, certificateRoutes.js,
+                      adminCertificateRoutes.js, certificateVerifyRoutes.js
     api/             # empty*
   middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js (all active);
                      csrf.js is still a placeholder*
-  validators/       # authValidators.js, eventValidators.js, donationValidators.js (active)
+  validators/       # authValidators.js, eventValidators.js, donationValidators.js, certificateValidators.js (active)
   views/
     layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
     partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs, flashMessage.ejs,
                         registrationStatusBadge.ejs, attendanceStatusBadge.ejs, donationStatusBadge.ejs,
-                        dashboard/statCard.ejs, dashboard/placeholderCard.ejs
-    pages/             # auth/, dashboard/, admin/ (incl. admin/events/, admin/donations/), events/,
-                         registrations/, attendance/, donations/ (active)
+                        certificateStatusBadge.ejs, dashboard/statCard.ejs, dashboard/placeholderCard.ejs
+    pages/             # auth/, dashboard/, admin/ (incl. admin/events/, admin/donations/, admin/certificates/), events/,
+                         registrations/, attendance/, donations/, certificates/, verifyCertificate.ejs (active)
   public/
     css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css — the design system
     js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm, donation type toggle)
     vendor/fontawesome/  # self-hosted Font Awesome (CSS + one woff2), no CDN dependency
     uploads/events/       # event banner images (gitignored, created at runtime by middlewares/upload.js)
-  utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js (active); mailer/pdfGenerator/csvExporter are placeholders*
+  utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js, pdfGenerator.js (active); mailer/csvExporter are placeholders*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
   migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status
-                          update + attendance check-in/check-out columns + donations reshape
+                          update + attendance check-in/check-out columns + donations reshape + certificates reshape
   seeders/               # 001-initial-seed.js (1 admin, 2 users, 3 categories)
 tests/
   unit/ integration/ e2e/
@@ -97,7 +102,8 @@ docs/
   PHASE5_VOLUNTEER_REGISTRATION.md  # what was built, design notes, bugs found & fixed, full test instructions
   PHASE6_ATTENDANCE_TRACKING.md       # schema change, what was built, design notes, full test instructions
   PHASE7_DONATION_MANAGEMENT.md         # schema change, what was built, design notes, full test instructions
-  API.md                                  # filled in as API routes are (re-)added
+  PHASE8_CERTIFICATE_GENERATION.md        # schema change, what was built, design notes, full test instructions
+  API.md                                    # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -238,7 +244,36 @@ docs/
   protection, admin search/filter/edit/delete, statistics and summary-by-type, dashboard updates,
   RBAC, and graceful error handling — see `docs/PHASE7_DONATION_MANAGEMENT.md`
 
+**Phase 8 — Certificate Generation**
+
+- Schema reshape (new migration, not an edit to prior ones): `certificates` dropped `file_key`
+  (PDFs are rendered on demand, never stored) and gained `verification_code` (unique), `total_hours`
+  (a frozen snapshot at issuance), `status` (Active/Revoked), `generated_by`/`revoked_by`/
+  `revoked_at` for an audit trail; `certificate_number` and the `UNIQUE(user_id, event_id)`
+  constraint from Phase 1 are unchanged and now double as the Certificate ID and the
+  duplicate-prevention guarantee
+- Volunteer: view all earned certificates and their details, download a certificate as a PDF
+- Admin: generate certificates from a per-event eligible-volunteer roster
+  (`/admin/events/:id/certificates` — approved registration + attendance marked Present only),
+  regenerate (re-issues the same certificate with a fresh verification code, also reactivating a
+  revoked one), revoke, view all with search (volunteer name/event/certificate ID) and filter
+  (event/issue date)
+- Public certificate verification page (`/verify-certificate`, no account needed) — enter a
+  Certificate ID + Verification Code, get back a binary Valid/Invalid result; a revoked certificate
+  is always reported Invalid
+- PDF certificates rendered on demand with `pdfkit` (`src/utils/pdfGenerator.js`) — no file ever
+  stored on disk, so a certificate is always available for download from its own database row
+- A routing subtlety was caught during this phase (not left as a latent bug): since every other
+  `/`-mounted router applies a blanket `verifyJwt`, the public verification route had to be
+  registered in `app.js` _before_ those routers, the same way `/login`/`/register` are — otherwise
+  an unauthenticated visitor would be redirected to `/login` before ever reaching it. See
+  `docs/PHASE8_CERTIFICATE_GENERATION.md`, Section 3
+- Verified end-to-end: eligibility enforcement, duplicate prevention, generate/regenerate/revoke
+  (including reactivating a revoked certificate via regenerate), PDF download (both the
+  ownership-checked volunteer route and the admin route), the public verification page (valid,
+  wrong code, stale code after regenerate, revoked, non-existent, case-insensitivity, empty-field
+  validation), admin search/filter, dashboard updates, RBAC, and graceful error handling
+
 ## Explicitly Not Yet Implemented
 
-Certificate Generation, Notifications, Reports. These follow the phased roadmap in
-`docs/PROJECT_BLUEPRINT.md`, starting with Certificate Generation next.
+Notifications, Reports. These follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`.

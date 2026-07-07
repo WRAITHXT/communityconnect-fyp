@@ -1,0 +1,48 @@
+<div class="page-header">
+  <h1>My Certificates</h1>
+  <p>Certificates issued to you for completed volunteer work.</p>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (certificates.length===0) { %>
+    <p class="hint">You have no certificates yet. Certificates are issued by an administrator once you've been marked present at an event.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Certificate ID</th>
+            <th>Event</th>
+            <th>Hours</th>
+            <th>Issue Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% certificates.forEach(function (c) { %>
+          <tr>
+            <td><%= c.certificate_number %></td>
+            <td><%= c.event_title %></td>
+            <td><%= Number(c.total_hours).toFixed(2) %></td>
+            <td><%= formatDate(c.issued_at) %></td>
+            <td>
+              <%- include('../../partials/certificateStatusBadge', { certificateStatus: c.status }) %>
+            </td>
+            <td class="table-actions">
+              <a href="/certificates/<%= c.id %>" class="btn btn-ghost btn-sm" title="View">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+              <a href="/certificates/<%= c.id %>/download" class="btn btn-ghost btn-sm" title="Download PDF">
+                <i class="fa-solid fa-download"></i>
+              </a>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

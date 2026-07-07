@@ -3,6 +3,7 @@ const eventModel = require('../models/eventModel');
 const registrationModel = require('../models/registrationModel');
 const attendanceModel = require('../models/attendanceModel');
 const donationModel = require('../models/donationModel');
+const certificateModel = require('../models/certificateModel');
 
 // Icons match the sidebar entries in src/config/navigation.js for the same
 // concept, so the two stay visually tied together. Cards/stats tied to a
@@ -11,15 +12,10 @@ const donationModel = require('../models/donationModel');
 // docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order. "Upcoming
 // Events" (user), "Total Events" (admin) since Phase 4, "My Event
 // Registrations" (user) / "Total Volunteers" (admin) since Phase 5, "My
-// Volunteer Hours" (user) since Phase 6, and "My Donations" (user) /
-// "Total Donations" (admin) since Phase 7 are now live.
+// Volunteer Hours" (user) since Phase 6, "My Donations" (user) / "Total
+// Donations" (admin) since Phase 7, and "My Certificates" (user) / "Total
+// Certificates" (admin) since Phase 8 are now live.
 const USER_DASHBOARD_CARDS = [
-  {
-    key: 'myCertificates',
-    title: 'My Certificates',
-    description: 'Download certificates for events you completed.',
-    icon: 'fa-solid fa-award',
-  },
   {
     key: 'notifications',
     title: 'Notifications',
@@ -33,6 +29,7 @@ async function getUserDashboardCards(userId) {
   const myRegistrationsCount = await registrationModel.countApprovedForUser(userId);
   const totalHours = await attendanceModel.getTotalHoursForUser(userId);
   const totalDonated = await donationModel.getTotalForUser(userId);
+  const myCertificatesCount = await certificateModel.countForUser(userId);
 
   const liveCards = [
     {
@@ -71,6 +68,15 @@ async function getUserDashboardCards(userId) {
       status: null,
       href: '/my-donations',
     },
+    {
+      key: 'myCertificates',
+      title: 'My Certificates',
+      description: 'Download certificates for events you completed.',
+      icon: 'fa-solid fa-award',
+      value: String(myCertificatesCount),
+      status: null,
+      href: '/my-certificates',
+    },
   ];
 
   const placeholderCards = USER_DASHBOARD_CARDS.map((card) => ({
@@ -83,15 +89,15 @@ async function getUserDashboardCards(userId) {
   return [...liveCards, ...placeholderCards];
 }
 
-// Total Users, Total Events, Total Volunteers, and Total Donations are all
-// real now (Authentication, Event Management, Volunteer Registration, and
-// Donation Management are implemented). Only Total Certificates remains a
-// placeholder.
+// Total Users, Total Events, Total Volunteers, Total Donations, and Total
+// Certificates are all real now (every module through Phase 8 is
+// implemented).
 async function getAdminStats() {
   const totalUsers = await userModel.countUsers();
   const totalEvents = await eventModel.countAll();
   const totalVolunteers = await registrationModel.countDistinctActiveVolunteers();
   const totalDonations = await donationModel.countAll();
+  const totalCertificates = await certificateModel.countAll();
 
   return [
     {
@@ -125,8 +131,8 @@ async function getAdminStats() {
     {
       key: 'totalCertificates',
       label: 'Total Certificates',
-      value: '—',
-      isLive: false,
+      value: totalCertificates,
+      isLive: true,
       icon: 'fa-solid fa-award',
     },
   ];
@@ -139,6 +145,10 @@ async function getAdminStats() {
 // donor-submitted in this design (see docs/PHASE7_DONATION_MANAGEMENT.md)
 // — there is no admin "create donation" action, only manage/edit/delete,
 // so this quick action points at the donations list, not a create form.
+// Similarly, certificates are always generated from a specific event's
+// eligible-volunteer roster (see docs/PHASE8_CERTIFICATE_GENERATION.md),
+// not from a standalone "create certificate" form, so this quick action
+// points at the certificates list rather than a generic create page.
 function getAdminQuickActions() {
   return [
     {
@@ -160,10 +170,10 @@ function getAdminQuickActions() {
       href: '/admin/donations',
     },
     {
-      key: 'generateCertificate',
-      label: 'Generate Certificate',
+      key: 'manageCertificates',
+      label: 'Manage Certificates',
       icon: 'fa-solid fa-award',
-      href: null,
+      href: '/admin/certificates',
     },
     { key: 'viewReports', label: 'View Reports', icon: 'fa-solid fa-chart-line', href: null },
   ];

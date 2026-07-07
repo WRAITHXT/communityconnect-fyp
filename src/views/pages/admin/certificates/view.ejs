@@ -1,0 +1,74 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Certificate Details</h1>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/certificates/<%= certificate.id %>/download" class="btn btn-secondary">
+        <i class="fa-solid fa-download"></i> Download PDF
+      </a>
+      <form method="POST" action="/admin/certificates/<%= certificate.id %>/regenerate" class="inline-form">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Regenerate</button>
+      </form>
+      <% if (certificate.status==='active') { %>
+      <form
+        method="POST"
+        action="/admin/certificates/<%= certificate.id %>/revoke"
+        class="inline-form"
+        data-confirm="Revoke this certificate? It will no longer verify as valid."
+      >
+        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-ban"></i> Revoke</button>
+      </form>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title"><%= certificate.event_title %></h2>
+      <%- include('../../../partials/certificateStatusBadge', { certificateStatus: certificate.status }) %>
+    </div>
+    <div class="profile-summary-grid">
+      <div>
+        <p class="profile-summary-label">Volunteer</p>
+        <p class="profile-summary-value"><%= certificate.volunteer_name %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Email</p>
+        <p class="profile-summary-value"><%= certificate.volunteer_email %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Certificate ID</p>
+        <p class="profile-summary-value"><%= certificate.certificate_number %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Verification Code</p>
+        <p class="profile-summary-value"><%= certificate.verification_code %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Issue Date</p>
+        <p class="profile-summary-value"><%= formatDate(certificate.issued_at) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Volunteer Hours</p>
+        <p class="profile-summary-value"><%= Number(certificate.total_hours).toFixed(2) %></p>
+      </div>
+      <div>
+        <p class="profile-summary-label">Event Date</p>
+        <p class="profile-summary-value"><%= formatDate(certificate.event_start_datetime) %></p>
+      </div>
+      <% if (certificate.status==='revoked') { %>
+      <div>
+        <p class="profile-summary-label">Revoked On</p>
+        <p class="profile-summary-value"><%= formatDate(certificate.revoked_at) %></p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <a href="/admin/certificates" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Back to Certificates</a>
+</section>

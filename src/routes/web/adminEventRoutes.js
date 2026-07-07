@@ -3,6 +3,7 @@ const express = require('express');
 const adminEventController = require('../../controllers/web/adminEventController');
 const adminRegistrationController = require('../../controllers/web/adminRegistrationController');
 const adminAttendanceController = require('../../controllers/web/adminAttendanceController');
+const adminCertificateController = require('../../controllers/web/adminCertificateController');
 const { verifyJwt } = require('../../middlewares/verifyJwt');
 const { requireRole } = require('../../middlewares/requireRole');
 const { uploadEventBanner } = require('../../middlewares/upload');
@@ -38,5 +39,8 @@ router.post('/:id/attendance/:registrationId/mark-present', adminAttendanceContr
 router.post('/:id/attendance/:registrationId/mark-absent', adminAttendanceController.markAbsent);
 router.get('/:id/attendance/:registrationId/edit', adminAttendanceController.showEditForm);
 router.post('/:id/attendance/:registrationId/edit', adminAttendanceController.update);
+
+router.get('/:id/certificates', adminCertificateController.eventRoster);
+router.post('/:id/certificates/:registrationId/generate', adminCertificateController.generate);
 
 module.exports = router;

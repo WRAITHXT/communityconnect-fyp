@@ -1,0 +1,69 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Certificates &mdash; <%= event.title %></h1>
+      <p>Generate certificates for volunteers marked present at this event.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/events/<%= event.id %>" class="btn btn-ghost">
+        <i class="fa-solid fa-arrow-left"></i> Back to Event
+      </a>
+    </div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (roster.length===0) { %>
+    <p class="hint">No volunteers are eligible yet — a volunteer must be registered and marked Present in Attendance before a certificate can be generated.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Volunteer</th>
+            <th>Email</th>
+            <th>Hours</th>
+            <th>Certificate</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% roster.forEach(function (row) { %>
+          <tr>
+            <td><%= row.volunteer_name %></td>
+            <td><%= row.volunteer_email %></td>
+            <td><%= Number(row.hours_contributed).toFixed(2) %></td>
+            <td>
+              <% if (row.certificate_id) { %>
+              <%= row.certificate_number %>
+              <%- include('../../../partials/certificateStatusBadge', { certificateStatus: row.certificate_status }) %>
+              <% } else { %>
+              <span class="hint">Not yet issued</span>
+              <% } %>
+            </td>
+            <td class="table-actions">
+              <% if (!row.certificate_id) { %>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/certificates/<%= row.registration_id %>/generate"
+                class="inline-form"
+              >
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="fa-solid fa-award"></i> Generate
+                </button>
+              </form>
+              <% } else { %>
+              <a href="/admin/certificates/<%= row.certificate_id %>" class="btn btn-ghost btn-sm" title="View">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

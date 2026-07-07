@@ -1,8 +1,8 @@
 // Sidebar navigation structure per role, shared by the app-shell layout
 // across every module. Items with href: null render as disabled,
-// "Coming soon" entries — they preview where each future module (Event
-// Management, Volunteer Management, Donations, Reports, Certificates) will
-// live in the sidebar without linking anywhere until that module exists.
+// "Coming soon" entries — they preview where each future module (Reports)
+// will live in the sidebar without linking anywhere until that module
+// exists.
 
 const userNavItems = [
   { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/dashboard' },
@@ -25,7 +25,12 @@ const userNavItems = [
     icon: 'fa-solid fa-hand-holding-heart',
     href: '/my-donations',
   },
-  { key: 'certificates', label: 'My Certificates', icon: 'fa-solid fa-award', href: null },
+  {
+    key: 'certificates',
+    label: 'My Certificates',
+    icon: 'fa-solid fa-award',
+    href: '/my-certificates',
+  },
   { key: 'notifications', label: 'Notifications', icon: 'fa-solid fa-bell', href: null },
 ];
 
@@ -54,7 +59,12 @@ const adminNavItems = [
     icon: 'fa-solid fa-hand-holding-heart',
     href: '/admin/donations',
   },
-  { key: 'certificates', label: 'Certificates', icon: 'fa-solid fa-award', href: null },
+  {
+    key: 'certificates',
+    label: 'Certificates',
+    icon: 'fa-solid fa-award',
+    href: '/admin/certificates',
+  },
   { key: 'reports', label: 'Reports', icon: 'fa-solid fa-chart-line', href: null },
   { key: 'users', label: 'Manage Users', icon: 'fa-solid fa-users', href: null },
 ];

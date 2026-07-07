@@ -1,0 +1,5 @@
+<%
+  var badgeClass = certificateStatus === 'active' ? 'badge-success' : 'badge-danger';
+  var badgeLabel = certificateStatus === 'active' ? 'Active' : 'Revoked';
+%>
+<span class="badge <%= badgeClass %>"><%= badgeLabel %></span>

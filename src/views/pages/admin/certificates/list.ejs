@@ -1,0 +1,96 @@
+<div class="page-header">
+  <h1>Manage Certificates</h1>
+  <p>View, search, and manage all issued certificates.</p>
+</div>
+
+<section class="dashboard-section">
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <p class="stat-label">Total Certificates</p>
+      <p class="stat-value"><%= totalCertificates %></p>
+    </div>
+  </div>
+</section>
+
+<div class="card">
+  <form method="GET" action="/admin/certificates" class="filter-bar">
+    <input
+      class="form-control"
+      type="text"
+      name="search"
+      placeholder="Search by volunteer name, event, or certificate ID&hellip;"
+      value="<%= filters.search %>"
+    />
+    <select class="form-control" name="eventId">
+      <option value="">All Events</option>
+      <% events.forEach(function (event) { %>
+      <option value="<%= event.id %>" <%= String(filters.eventId)===String(event.id) ? 'selected' : '' %>>
+        <%= event.title %>
+      </option>
+      <% }); %>
+    </select>
+    <input class="form-control" type="date" name="date" value="<%= filters.date %>" />
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/admin/certificates" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (certificates.length===0) { %>
+    <p class="hint">No certificates match your filters.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Certificate ID</th>
+            <th>Volunteer</th>
+            <th>Event</th>
+            <th>Hours</th>
+            <th>Issue Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% certificates.forEach(function (c) { %>
+          <tr>
+            <td><%= c.certificate_number %></td>
+            <td><%= c.volunteer_name %></td>
+            <td><%= c.event_title %></td>
+            <td><%= Number(c.total_hours).toFixed(2) %></td>
+            <td><%= formatDate(c.issued_at) %></td>
+            <td>
+              <%- include('../../../partials/certificateStatusBadge', { certificateStatus: c.status }) %>
+            </td>
+            <td class="table-actions">
+              <a href="/admin/certificates/<%= c.id %>" class="btn btn-ghost btn-sm" title="View">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+              <form method="POST" action="/admin/certificates/<%= c.id %>/regenerate" class="inline-form">
+                <button type="submit" class="btn btn-ghost btn-sm" title="Regenerate">
+                  <i class="fa-solid fa-rotate"></i>
+                </button>
+              </form>
+              <% if (c.status==='active') { %>
+              <form
+                method="POST"
+                action="/admin/certificates/<%= c.id %>/revoke"
+                class="inline-form"
+                data-confirm="Revoke this certificate? It will no longer verify as valid."
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Revoke">
+                  <i class="fa-solid fa-ban"></i>
+                </button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>
