@@ -151,4 +151,107 @@ function streamCertificatePdf(res, certificate) {
   doc.end();
 }
 
-module.exports = { streamCertificatePdf };
+// Generic tabular report PDF (Reports & Analytics export) — reused by all
+// four reports rather than one renderer per report, since the shape is
+// identical: a title, an optional subtitle (the active filters), and a
+// paginated table. Landscape gives the widest report (Event Report, 9
+// columns) more room per column than portrait would.
+//
+// Row height is measured per row via doc.heightOfString rather than a fixed
+// constant — a fixed height silently overlapped rows whenever a cell's text
+// wrapped to two lines in a narrow column (long event titles, "Attendance
+// Rate (%)" as a header), which only shows up once real, non-trivial-length
+// data is exported and rendered, not on a doc.text() call count.
+function streamTablePdf(res, { filename, title, subtitle, columns, rows }) {
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+  const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
+  doc.pipe(res);
+
+  doc.fillColor(INK_COLOR).fontSize(18).font('Helvetica-Bold').text(title);
+  if (subtitle) {
+    doc.moveDown(0.2);
+    doc.fillColor(MUTED_COLOR).fontSize(10).font('Helvetica').text(subtitle);
+  }
+
+  const startX = doc.page.margins.left;
+  const usableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  const colWidth = usableWidth / columns.length;
+  const cellWidth = colWidth - 6;
+  const bottomLimit = doc.page.height - doc.page.margins.bottom;
+  const MIN_ROW_HEIGHT = 18;
+  const CELL_PADDING = 8;
+
+  function cellValues(row, isHeader) {
+    return columns.map((col) => {
+      if (isHeader) return col.label;
+      const value = col.format ? col.format(row) : row[col.key];
+      return value === null || value === undefined ? '' : String(value);
+    });
+  }
+
+  function measureRowHeight(values) {
+    let maxHeight = MIN_ROW_HEIGHT;
+    values.forEach((text) => {
+      const h = doc.heightOfString(text, { width: cellWidth });
+      if (h > maxHeight) maxHeight = h;
+    });
+    return maxHeight + CELL_PADDING;
+  }
+
+  function drawRow(values, y, height, { header = false } = {}) {
+    doc
+      .font(header ? 'Helvetica-Bold' : 'Helvetica')
+      .fontSize(9)
+      .fillColor(INK_COLOR);
+    values.forEach((text, i) => {
+      doc.text(text, startX + i * colWidth, y, { width: cellWidth });
+    });
+    if (header) {
+      doc
+        .moveTo(startX, y + height)
+        .lineTo(startX + usableWidth, y + height)
+        .lineWidth(1)
+        .stroke(BORDER_COLOR);
+    }
+  }
+
+  const headerValues = cellValues(null, true);
+  const headerHeight = measureRowHeight(headerValues);
+
+  function drawHeader(y) {
+    drawRow(headerValues, y, headerHeight, { header: true });
+  }
+
+  let y = doc.y + 12;
+  drawHeader(y);
+  y += headerHeight + 4;
+
+  rows.forEach((row) => {
+    const values = cellValues(row, false);
+    const height = measureRowHeight(values);
+
+    if (y + height > bottomLimit) {
+      doc.addPage();
+      y = doc.page.margins.top;
+      drawHeader(y);
+      y += headerHeight + 4;
+    }
+
+    drawRow(values, y, height);
+    y += height;
+  });
+
+  if (rows.length === 0) {
+    doc
+      .fillColor(MUTED_COLOR)
+      .fontSize(10)
+      .font('Helvetica')
+      .text('No data matches the current filters.', startX, y);
+  }
+
+  doc.end();
+}
+
+module.exports = { streamCertificatePdf, streamTablePdf };

@@ -150,6 +150,27 @@ async function listHistoryForUser(userId) {
   return rows;
 }
 
+// Reports & Analytics — platform-wide "Total Volunteers Attended" stat: every
+// attendance record marked Present, regardless of which user (a record count,
+// not a distinct-people count — consistent with the other platform-wide
+// "Total X" stats).
+async function countAttended() {
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM attendance WHERE status = 'attended'`
+  );
+  return rows[0].count;
+}
+
+// Reports & Analytics — platform-wide "Total Volunteer Hours" stat (unlike
+// getTotalHoursForUser, which is scoped to one volunteer).
+async function getTotalHoursAll() {
+  const { rows } = await pool.query(
+    `SELECT COALESCE(SUM(hours_contributed), 0) AS total_hours
+     FROM attendance WHERE status = 'attended'`
+  );
+  return Number(rows[0].total_hours);
+}
+
 module.exports = {
   findByRegistrationId,
   findById,
@@ -162,4 +183,6 @@ module.exports = {
   getEventStats,
   getTotalHoursForUser,
   listHistoryForUser,
+  countAttended,
+  getTotalHoursAll,
 };

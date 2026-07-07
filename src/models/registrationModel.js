@@ -137,6 +137,15 @@ async function countDistinctActiveVolunteers() {
   return rows[0].count;
 }
 
+// Reports & Analytics — "Total Volunteer Registrations": every registration
+// record ever made, regardless of status, mirroring how "Total Donations"
+// counts every donation record regardless of status rather than a distinct
+// count of people.
+async function countAll() {
+  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM event_registrations');
+  return rows[0].count;
+}
+
 module.exports = {
   findByEventAndUser,
   findById,
@@ -148,4 +157,5 @@ module.exports = {
   getEventStats,
   countApprovedForUser,
   countDistinctActiveVolunteers,
+  countAll,
 };

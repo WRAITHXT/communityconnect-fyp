@@ -1,0 +1,108 @@
+<%
+  var qs = Object.entries(filters)
+    .filter(function (e) { return e[1] !== undefined; })
+    .map(function (e) { return encodeURIComponent(e[0]) + '=' + encodeURIComponent(e[1]); })
+    .join('&');
+%>
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Certificate Report</h1>
+      <p>Certificates generated, revoked, and verification activity.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/reports/certificates/export.csv<%= qs ? '?' + qs : '' %>" class="btn btn-secondary">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </a>
+      <a href="/admin/reports/certificates/export.pdf<%= qs ? '?' + qs : '' %>" class="btn btn-secondary">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="GET" action="/admin/reports/certificates" class="filter-bar">
+    <select class="form-control" name="eventId">
+      <option value="">All Events</option>
+      <% events.forEach(function (event) { %>
+      <option value="<%= event.id %>" <%= String(filters.eventId)===String(event.id) ? 'selected' : '' %>>
+        <%= event.title %>
+      </option>
+      <% }); %>
+    </select>
+    <select class="form-control" name="userId">
+      <option value="">All Volunteers</option>
+      <% volunteers.forEach(function (v) { %>
+      <option value="<%= v.id %>" <%= String(filters.userId)===String(v.id) ? 'selected' : '' %>>
+        <%= v.name %>
+      </option>
+      <% }); %>
+    </select>
+    <select class="form-control" name="status">
+      <option value="">All Statuses</option>
+      <option value="active" <%= filters.status==='active' ? 'selected' : '' %>>Active</option>
+      <option value="revoked" <%= filters.status==='revoked' ? 'selected' : '' %>>Revoked</option>
+    </select>
+    <input class="form-control" type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" placeholder="From" />
+    <input class="form-control" type="date" name="dateTo" value="<%= filters.dateTo || '' %>" placeholder="To" />
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/admin/reports/certificates" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="report-summary-grid">
+    <div class="card stat-card">
+      <p class="stat-label">Certificates Generated</p>
+      <p class="stat-value"><%= stats.generated %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Revoked Certificates</p>
+      <p class="stat-value"><%= stats.revoked %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Verification Attempts</p>
+      <p class="stat-value"><%= verification.totalAttempts %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Valid / Invalid</p>
+      <p class="stat-value"><%= verification.validCount %> / <%= verification.invalidCount %></p>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (rows.length===0) { %>
+    <p class="hint">No certificates match your filters.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Certificate ID</th>
+            <th>Volunteer</th>
+            <th>Event</th>
+            <th>Hours</th>
+            <th>Issue Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.forEach(function (c) { %>
+          <tr>
+            <td><%= c.certificate_number %></td>
+            <td><%= c.volunteer_name %></td>
+            <td><%= c.event_title %></td>
+            <td><%= Number(c.total_hours).toFixed(2) %></td>
+            <td><%= formatDate(c.issued_at) %></td>
+            <td><%- include('../../partials/certificateStatusBadge', { certificateStatus: c.status }) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

@@ -143,6 +143,15 @@ async function countUpcomingPublished() {
   return rows[0].count;
 }
 
+// Reports & Analytics — "Published Events" stat: every published event
+// regardless of date (unlike countUpcomingPublished, which is future-only).
+async function countPublished() {
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM events WHERE status = 'published'`
+  );
+  return rows[0].count;
+}
+
 module.exports = {
   list,
   findById,
@@ -152,4 +161,5 @@ module.exports = {
   remove,
   countAll,
   countUpcomingPublished,
+  countPublished,
 };

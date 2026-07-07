@@ -1,0 +1,121 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Reports &amp; Analytics</h1>
+      <p>Platform-wide statistics and trends across every module.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/reports/events" class="btn btn-secondary"><i class="fa-solid fa-calendar-days"></i> Event Report</a>
+      <a href="/admin/reports/volunteers" class="btn btn-secondary"><i class="fa-solid fa-people-group"></i> Volunteer Report</a>
+      <a href="/admin/reports/donations" class="btn btn-secondary"><i class="fa-solid fa-hand-holding-heart"></i> Donation Report</a>
+      <a href="/admin/reports/certificates" class="btn btn-secondary"><i class="fa-solid fa-award"></i> Certificate Report</a>
+    </div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+      <p class="stat-label">Total Users</p>
+      <p class="stat-value"><%= stats.totalUsers %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+      <p class="stat-label">Total Events</p>
+      <p class="stat-value"><%= stats.totalEvents %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <p class="stat-label">Published Events</p>
+      <p class="stat-value"><%= stats.publishedEvents %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+      <p class="stat-label">Total Volunteer Registrations</p>
+      <p class="stat-value"><%= stats.totalRegistrations %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-people-group"></i></div>
+      <p class="stat-label">Total Volunteers Attended</p>
+      <p class="stat-value"><%= stats.totalAttended %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+      <p class="stat-label">Total Volunteer Hours</p>
+      <p class="stat-value"><%= stats.totalHours.toFixed(2) %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+      <p class="stat-label">Total Donations</p>
+      <p class="stat-value"><%= stats.totalDonations %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+      <p class="stat-label">Total Donation Amount</p>
+      <p class="stat-value"><%= stats.totalDonationAmount.toFixed(2) %></p>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-award"></i></div>
+      <p class="stat-label">Total Certificates Generated</p>
+      <p class="stat-value"><%= stats.totalCertificates %></p>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <h2 class="section-title">Charts</h2>
+  <div class="charts-grid">
+    <div class="card">
+      <p class="chart-card-title">Event Registrations Over Time</p>
+      <div class="chart-canvas-wrap"><canvas id="chartRegistrations"></canvas></div>
+    </div>
+    <div class="card">
+      <p class="chart-card-title">Volunteer Hours by Month</p>
+      <div class="chart-canvas-wrap"><canvas id="chartHours"></canvas></div>
+    </div>
+    <div class="card">
+      <p class="chart-card-title">Donation Amounts by Type</p>
+      <div class="chart-canvas-wrap"><canvas id="chartDonationsByType"></canvas></div>
+    </div>
+    <div class="card">
+      <p class="chart-card-title">Certificates Generated Over Time</p>
+      <div class="chart-canvas-wrap"><canvas id="chartCertificates"></canvas></div>
+    </div>
+    <div class="card" style="grid-column: 1 / -1">
+      <p class="chart-card-title">Attendance by Event (Most Recent 8)</p>
+      <div class="chart-canvas-wrap"><canvas id="chartAttendanceByEvent"></canvas></div>
+      <!--
+        Table view under the chart is deliberate, not decorative — the
+        "Attended" series (aqua) sits below the 3:1 contrast floor against a
+        white surface, so per the palette's own relief rule this table (plus
+        the legend above) carries the exact values a low-contrast bar
+        wouldn't reliably convey on its own.
+      -->
+      <div class="table-responsive" style="margin-top: var(--space-4)">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Registered</th>
+              <th>Attended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% charts.attendanceByEvent.forEach(function (row) { %>
+            <tr>
+              <td><%= row.title %></td>
+              <td><%= row.total_registrations %></td>
+              <td><%= row.total_attendance %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script id="reportsChartData" type="application/json"><%- chartsJson %></script>
+<script src="/vendor/chartjs/chart.umd.min.js"></script>
+<script src="/js/reportsCharts.js"></script>

@@ -28,10 +28,20 @@ async function countUsers() {
   return rows[0].count;
 }
 
+// Reports & Analytics — populates the Volunteer Report's volunteer-picker
+// filter dropdown.
+async function listByRole(role) {
+  const { rows } = await pool.query(
+    'SELECT id, name, email FROM users WHERE role = $1 ORDER BY name ASC',
+    [role]
+  );
+  return rows;
+}
+
 function sanitizeUser(user) {
   if (!user) return null;
   const { id, name, email, role, status, created_at } = user;
   return { id, name, email, role, status, created_at };
 }
 
-module.exports = { findByEmail, findById, createUser, countUsers, sanitizeUser };
+module.exports = { findByEmail, findById, createUser, countUsers, listByRole, sanitizeUser };

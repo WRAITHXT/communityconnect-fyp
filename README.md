@@ -11,8 +11,9 @@ Volunteer Registration details and how to test it: [docs/PHASE5_VOLUNTEER_REGIST
 Attendance Tracking details and how to test it: [docs/PHASE6_ATTENDANCE_TRACKING.md](docs/PHASE6_ATTENDANCE_TRACKING.md).
 Donation Management details and how to test it: [docs/PHASE7_DONATION_MANAGEMENT.md](docs/PHASE7_DONATION_MANAGEMENT.md).
 Certificate Generation details and how to test it: [docs/PHASE8_CERTIFICATE_GENERATION.md](docs/PHASE8_CERTIFICATE_GENERATION.md).
+Reports & Analytics details and how to test it: [docs/PHASE9_REPORTS_ANALYTICS.md](docs/PHASE9_REPORTS_ANALYTICS.md).
 
-**Status**: Phase 8 — Certificate Generation implemented (eligible-volunteer generation, regenerate, revoke, PDF download, public verification page, admin search/filter, colored status badges). Notifications and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
+**Status**: Phase 9 — Reports & Analytics implemented (9-stat overview with 5 Chart.js charts, four filterable reports — Event/Volunteer/Donation/Certificate — each exportable as CSV and PDF). Notifications is the only module not implemented yet (its dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -45,8 +46,10 @@ one and point `DATABASE_URL` in `.env` at it, then run migrations/seed, before u
 | `npm run migrate:create -- <name>` | Scaffold a new empty migration file                            |
 | `npm run seed`                     | Insert the Phase 1 seed data (1 admin, 2 users, 3 categories)  |
 
-`pdfkit` renders certificate PDFs directly to the HTTP response — no native/binary dependency, no
-files written to disk.
+`pdfkit` renders certificate and report PDFs directly to the HTTP response — no native/binary
+dependency, no files written to disk. Chart.js (self-hosted under `public/vendor/chartjs/`, like
+Font Awesome) renders the Reports Overview page's charts; CSV export is hand-rolled (no
+`json2csv`/`csv-writer` dependency).
 
 See [docs/PHASE1_DATABASE.md](docs/PHASE1_DATABASE.md) for full details on the schema and these
 commands.
@@ -57,17 +60,17 @@ commands.
 src/
   config/        # env.js, db.js (pg Pool), jwt.js, navigation.js (sidebar nav data, active), constants.js*
   models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js, attendanceModel.js,
-                   donationModel.js, certificateModel.js (active)
+                   donationModel.js, certificateModel.js, verificationLogModel.js, reportModel.js (active)
   services/       # authService.js, dashboardService.js, eventService.js, registrationService.js,
-                    attendanceService.js, donationService.js, certificateService.js (active)
+                    attendanceService.js, donationService.js, certificateService.js, reportService.js (active)
   controllers/
     web/           # auth/dashboard/event/adminEvent/registration/adminRegistration/attendance/adminAttendance/
-                     donation/adminDonation/certificate/adminCertificate/certificateVerify controllers
+                     donation/adminDonation/certificate/adminCertificate/certificateVerify/adminReport controllers
     api/            # empty — no active API routes right now*
   routes/
     web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js,
                       attendanceRoutes.js, donationRoutes.js, adminDonationRoutes.js, certificateRoutes.js,
-                      adminCertificateRoutes.js, certificateVerifyRoutes.js
+                      adminCertificateRoutes.js, certificateVerifyRoutes.js, adminReportRoutes.js
     api/             # empty*
   middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js (all active);
                      csrf.js is still a placeholder*
@@ -78,17 +81,20 @@ src/
                         registrationStatusBadge.ejs, attendanceStatusBadge.ejs, donationStatusBadge.ejs,
                         certificateStatusBadge.ejs, dashboard/statCard.ejs, dashboard/placeholderCard.ejs
     pages/             # auth/, dashboard/, admin/ (incl. admin/events/, admin/donations/, admin/certificates/), events/,
-                         registrations/, attendance/, donations/, certificates/, verifyCertificate.ejs (active)
+                         registrations/, attendance/, donations/, certificates/, verifyCertificate.ejs, reports/ (active)
   public/
-    css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css — the design system
-    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm, donation type toggle)
+    css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css, reports.css — the design system
+    js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm, donation type toggle),
+                          reportsCharts.js (Chart.js rendering, Reports Overview page only)
     vendor/fontawesome/  # self-hosted Font Awesome (CSS + one woff2), no CDN dependency
+    vendor/chartjs/       # self-hosted Chart.js v4 UMD build, no CDN dependency
     uploads/events/       # event banner images (gitignored, created at runtime by middlewares/upload.js)
-  utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js, pdfGenerator.js (active); mailer/csvExporter are placeholders*
+  utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js, pdfGenerator.js, csvExporter.js (active); mailer.js is a placeholder*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
   migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status
                           update + attendance check-in/check-out columns + donations reshape + certificates reshape
+                          + certificate_verification_logs table
   seeders/               # 001-initial-seed.js (1 admin, 2 users, 3 categories)
 tests/
   unit/ integration/ e2e/
@@ -103,7 +109,8 @@ docs/
   PHASE6_ATTENDANCE_TRACKING.md       # schema change, what was built, design notes, full test instructions
   PHASE7_DONATION_MANAGEMENT.md         # schema change, what was built, design notes, full test instructions
   PHASE8_CERTIFICATE_GENERATION.md        # schema change, what was built, design notes, full test instructions
-  API.md                                    # filled in as API routes are (re-)added
+  PHASE9_REPORTS_ANALYTICS.md               # schema change, what was built, design notes, bugs found & fixed, full test instructions
+  API.md                                      # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -274,6 +281,45 @@ docs/
   wrong code, stale code after regenerate, revoked, non-existent, case-insensitivity, empty-field
   validation), admin search/filter, dashboard updates, RBAC, and graceful error handling
 
+**Phase 9 — Reports & Analytics**
+
+- Schema addition (new migration, not an edit to prior ones): a new `certificate_verification_logs`
+  table logs every public certificate-verification attempt (result: valid/invalid) — the one
+  required touch to a completed module (Phase 8's `certificateService.verifyCertificate` now also
+  logs, without changing what the visitor sees), needed to back the Certificate Report's
+  verification statistics
+- Admin-only Reports & Analytics area (`/admin/reports`): an overview page with 9 platform-wide
+  stats (Total Users, Total Events, Published Events, Total Volunteer Registrations, Total
+  Volunteers Attended, Total Volunteer Hours, Total Donations, Total Donation Amount, Total
+  Certificates Generated) and 5 Chart.js charts (registrations over time, volunteer hours by
+  month, donation amounts by type, attendance by event, certificates over time)
+- Four filterable reports, each with search/filter and CSV + PDF export: Event Report
+  (registrations/attendance/attendance rate/remaining capacity per event), Volunteer Report
+  (registered events/attended/hours/certificates per volunteer), Donation Report (history, totals,
+  breakdown by type, summary by status), Certificate Report (generated/revoked counts,
+  verification statistics)
+- Filters applied per report where they're semantically real (Date Range + Event for Event Report;
+  Date Range + Volunteer for Volunteer Report; Date Range + Donation Type + Status for Donation
+  Report — donations have no `event_id` since Phase 7's reshape; Date Range + Event + Volunteer +
+  Status for Certificate Report) — every malformed/invalid filter value is silently dropped rather
+  than reaching a query, so a bad date or id never 500s
+- CSV export hand-rolled (`utils/csvExporter.js`, no dependency); PDF export via a generic,
+  reusable landscape table renderer added to `utils/pdfGenerator.js`; charts via a self-hosted
+  Chart.js (`public/vendor/chartjs/`, same self-hosting pattern as Font Awesome), with its
+  categorical color palette run through a validator for CVD-safety and contrast before shipping
+  (see `docs/PHASE9_REPORTS_ANALYTICS.md`, Section 3)
+- **Three real bugs found and fixed during this session**: (1) an ambiguous `month` column
+  reference across the three "last 6 months" chart queries (500'd the Overview page); (2) the
+  Volunteer Report's summed hours were inflated by a join fan-out between two independently-joined
+  child tables, fixed by pre-aggregating each into its own subquery before joining to `users`;
+  (3) PDF report exports overlapped rows whenever a cell's text wrapped to two lines under a fixed
+  row height, fixed by switching to landscape and measuring each row's real height. Full details
+  in `docs/PHASE9_REPORTS_ANALYTICS.md`
+- Verified end-to-end: all 9 stats and all 5 charts against known test data (including a real
+  headless-browser screenshot check for rendering/console errors), all 4 reports and their filters,
+  CSV and PDF export for all 4 reports (including empty-result cases), RBAC, and graceful error
+  handling for malformed filters
+
 ## Explicitly Not Yet Implemented
 
-Notifications, Reports. These follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`.
+Notifications. This follows the phased roadmap in `docs/PROJECT_BLUEPRINT.md`.

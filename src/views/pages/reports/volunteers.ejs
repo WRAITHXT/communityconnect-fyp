@@ -1,0 +1,74 @@
+<%
+  var qs = Object.entries(filters)
+    .filter(function (e) { return e[1] !== undefined; })
+    .map(function (e) { return encodeURIComponent(e[0]) + '=' + encodeURIComponent(e[1]); })
+    .join('&');
+%>
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Volunteer Report</h1>
+      <p>Registrations, attendance, hours, and certificates per volunteer.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/reports/volunteers/export.csv<%= qs ? '?' + qs : '' %>" class="btn btn-secondary">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </a>
+      <a href="/admin/reports/volunteers/export.pdf<%= qs ? '?' + qs : '' %>" class="btn btn-secondary">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="GET" action="/admin/reports/volunteers" class="filter-bar">
+    <select class="form-control" name="userId">
+      <option value="">All Volunteers</option>
+      <% volunteers.forEach(function (v) { %>
+      <option value="<%= v.id %>" <%= String(filters.userId)===String(v.id) ? 'selected' : '' %>>
+        <%= v.name %>
+      </option>
+      <% }); %>
+    </select>
+    <input class="form-control" type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" placeholder="From" />
+    <input class="form-control" type="date" name="dateTo" value="<%= filters.dateTo || '' %>" placeholder="To" />
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/admin/reports/volunteers" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (rows.length===0) { %>
+    <p class="hint">No volunteers match your filters.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Volunteer</th>
+            <th>Email</th>
+            <th>Registered Events</th>
+            <th>Events Attended</th>
+            <th>Total Hours</th>
+            <th>Certificates Earned</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.forEach(function (row) { %>
+          <tr>
+            <td><%= row.name %></td>
+            <td><%= row.email %></td>
+            <td><%= row.registered_events %></td>
+            <td><%= row.events_attended %></td>
+            <td><%= row.total_hours.toFixed(2) %></td>
+            <td><%= row.certificates_earned %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

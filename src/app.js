@@ -7,6 +7,7 @@ const expressLayouts = require('express-ejs-layouts');
 const config = require('./config/env');
 const logger = require('./utils/logger');
 const storage = require('./utils/storage');
+const { formatDate } = require('./utils/format');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 const { attachCurrentUser } = require('./middlewares/verifyJwt');
 const { attachFlashFromQuery } = require('./middlewares/flash');
@@ -21,6 +22,7 @@ const webAdminDonationRoutes = require('./routes/web/adminDonationRoutes');
 const webCertificateRoutes = require('./routes/web/certificateRoutes');
 const webAdminCertificateRoutes = require('./routes/web/adminCertificateRoutes');
 const webCertificateVerifyRoutes = require('./routes/web/certificateVerifyRoutes');
+const webAdminReportRoutes = require('./routes/web/adminReportRoutes');
 
 const app = express();
 
@@ -33,8 +35,7 @@ app.use(expressLayouts);
 // Shared view helpers available in every template without passing them
 // through every render() call — see docs/PHASE4_EVENT_MANAGEMENT.md.
 app.locals.getBannerUrl = storage.getPublicUrl;
-app.locals.formatDate = (value) =>
-  new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+app.locals.formatDate = formatDate;
 app.locals.formatTime = (value) =>
   new Date(value).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
@@ -82,6 +83,7 @@ app.use('/', webDonationRoutes);
 app.use('/admin/donations', webAdminDonationRoutes);
 app.use('/', webCertificateRoutes);
 app.use('/admin/certificates', webAdminCertificateRoutes);
+app.use('/admin/reports', webAdminReportRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

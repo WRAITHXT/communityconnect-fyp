@@ -1,8 +1,8 @@
 // Sidebar navigation structure per role, shared by the app-shell layout
 // across every module. Items with href: null render as disabled,
-// "Coming soon" entries — they preview where each future module (Reports)
-// will live in the sidebar without linking anywhere until that module
-// exists.
+// "Coming soon" entries — they preview where each future module
+// (Notifications) will live in the sidebar without linking anywhere until
+// that module exists.
 
 const userNavItems = [
   { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/dashboard' },
@@ -65,7 +65,12 @@ const adminNavItems = [
     icon: 'fa-solid fa-award',
     href: '/admin/certificates',
   },
-  { key: 'reports', label: 'Reports', icon: 'fa-solid fa-chart-line', href: null },
+  {
+    key: 'reports',
+    label: 'Reports',
+    icon: 'fa-solid fa-chart-line',
+    href: '/admin/reports',
+  },
   { key: 'users', label: 'Manage Users', icon: 'fa-solid fa-users', href: null },
 ];
 

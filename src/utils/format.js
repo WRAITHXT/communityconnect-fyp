@@ -10,4 +10,15 @@ function getInitials(name) {
     .join('');
 }
 
-module.exports = { getInitials };
+// Same rendering as app.locals.formatDate (src/app.js) — factored out here
+// so non-EJS code (reportService's CSV/PDF column formatters) can format a
+// date identically without duplicating the Intl options.
+function formatDate(value) {
+  return new Date(value).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+module.exports = { getInitials, formatDate };

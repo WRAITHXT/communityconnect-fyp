@@ -1,0 +1,34 @@
+/*
+  Reports & Analytics — chart grid layout on top of components.css (.card).
+  Chart.js draws to the canvas itself; this file only sizes/positions the
+  cards that hold it, consistent with how dashboard.css only lays out
+  .stat-card/.dash-card rather than styling their content.
+*/
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--space-4);
+}
+
+.chart-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  height: 260px;
+}
+
+.chart-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}

@@ -1,0 +1,134 @@
+<%
+  var qs = Object.entries(filters)
+    .filter(function (e) { return e[1] !== undefined; })
+    .map(function (e) { return encodeURIComponent(e[0]) + '=' + encodeURIComponent(e[1]); })
+    .join('&');
+%>
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Donation Report</h1>
+      <p>Donation history, totals, type breakdown, and status summary.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/reports/donations/export.csv<%= qs ? '?' + qs : '' %>" class="btn btn-secondary">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </a>
+      <a href="/admin/reports/donations/export.pdf<%= qs ? '?' + qs : '' %>" class="btn btn-secondary">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="GET" action="/admin/reports/donations" class="filter-bar">
+    <select class="form-control" name="donationType">
+      <option value="">All Types</option>
+      <% donationTypes.forEach(function (type) { %>
+      <option value="<%= type %>" <%= filters.donationType===type ? 'selected' : '' %>><%= type %></option>
+      <% }); %>
+    </select>
+    <select class="form-control" name="status">
+      <option value="">All Statuses</option>
+      <% donationStatuses.forEach(function (s) { %>
+      <option value="<%= s %>" <%= filters.status===s ? 'selected' : '' %>><%= s %></option>
+      <% }); %>
+    </select>
+    <input class="form-control" type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" placeholder="From" />
+    <input class="form-control" type="date" name="dateTo" value="<%= filters.dateTo || '' %>" placeholder="To" />
+    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="/admin/reports/donations" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<section class="dashboard-section">
+  <div class="report-summary-grid">
+    <div class="card stat-card">
+      <p class="stat-label">Donations (matching filters)</p>
+      <p class="stat-value"><%= totals.count %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Total Amount (Completed)</p>
+      <p class="stat-value"><%= totals.totalAmount.toFixed(2) %></p>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <h2 class="section-title">Breakdown by Type</h2>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr><th>Type</th><th>Count</th><th>Total Amount (Completed)</th></tr>
+        </thead>
+        <tbody>
+          <% byType.forEach(function (row) { %>
+          <tr>
+            <td><%= row.donation_type %></td>
+            <td><%= row.count %></td>
+            <td><%= row.total_amount.toFixed(2) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <h2 class="section-title">Summary by Status</h2>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr><th>Status</th><th>Count</th><th>Total Amount (Completed)</th></tr>
+        </thead>
+        <tbody>
+          <% byStatus.forEach(function (row) { %>
+          <tr>
+            <td><%- include('../../partials/donationStatusBadge', { donationStatus: row.status }) %></td>
+            <td><%= row.count %></td>
+            <td><%= row.total_amount.toFixed(2) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <h2 class="section-title">Donation History</h2>
+  <div class="card">
+    <% if (rows.length===0) { %>
+    <p class="hint">No donations match your filters.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Donor</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.forEach(function (d) { %>
+          <tr>
+            <td><%= d.donor_name %></td>
+            <td><%= d.donation_type %></td>
+            <td><%= d.amount !==null ? Number(d.amount).toFixed(2) : '—' %></td>
+            <td><%= formatDate(d.donated_at) %></td>
+            <td><%- include('../../partials/donationStatusBadge', { donationStatus: d.status }) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

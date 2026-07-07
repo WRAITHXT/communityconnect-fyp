@@ -175,7 +175,12 @@ function getAdminQuickActions() {
       icon: 'fa-solid fa-award',
       href: '/admin/certificates',
     },
-    { key: 'viewReports', label: 'View Reports', icon: 'fa-solid fa-chart-line', href: null },
+    {
+      key: 'viewReports',
+      label: 'View Reports',
+      icon: 'fa-solid fa-chart-line',
+      href: '/admin/reports',
+    },
   ];
 }
 

@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const certificateModel = require('../models/certificateModel');
 const registrationModel = require('../models/registrationModel');
 const attendanceModel = require('../models/attendanceModel');
+const verificationLogModel = require('../models/verificationLogModel');
 
 const UNIQUE_VIOLATION = '23505';
 const MAX_CODE_ATTEMPTS = 5;
@@ -161,13 +162,27 @@ async function revokeCertificate(certificateId, adminId) {
 // Verification page: deliberately binary (Valid / Invalid). A revoked
 // certificate is reported Invalid too — revocation exists specifically to
 // invalidate a previously-issued certificate — and a wrong ID/code pair
-// never reveals which half was wrong.
+// never reveals which half was wrong. Every attempt is logged (Phase 9
+// Reports & Analytics' "verification statistics") — logging never changes
+// the Valid/Invalid result shown to the caller.
 async function verifyCertificate(certificateNumber, verificationCode) {
+  const trimmedNumber = certificateNumber.trim();
   const certificate = await certificateModel.findForVerification(
-    certificateNumber.trim(),
+    trimmedNumber,
     verificationCode.trim().toUpperCase()
   );
-  if (!certificate || certificate.status !== 'active') {
+  const isValid = Boolean(certificate) && certificate.status === 'active';
+
+  await verificationLogModel.create({
+    certificateId: certificate ? certificate.id : null,
+    // Truncated to fit certificate_number_attempted's varchar(50) — the
+    // verification form has no length limit, but a value this long could
+    // never match a real certificate number anyway.
+    certificateNumberAttempted: trimmedNumber.slice(0, 50),
+    result: isValid ? 'valid' : 'invalid',
+  });
+
+  if (!isValid) {
     return { valid: false, certificate: null };
   }
   return { valid: true, certificate };
