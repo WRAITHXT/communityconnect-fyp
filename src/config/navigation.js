@@ -18,7 +18,7 @@ const userNavItems = [
     icon: 'fa-solid fa-clipboard-list',
     href: '/my-registrations',
   },
-  { key: 'hours', label: 'My Volunteer Hours', icon: 'fa-solid fa-clock', href: null },
+  { key: 'hours', label: 'My Volunteer Hours', icon: 'fa-solid fa-clock', href: '/my-attendance' },
   {
     key: 'donations',
     label: 'My Donations',

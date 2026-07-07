@@ -15,6 +15,7 @@ const webDashboardRoutes = require('./routes/web/dashboardRoutes');
 const webEventRoutes = require('./routes/web/eventRoutes');
 const webAdminEventRoutes = require('./routes/web/adminEventRoutes');
 const webRegistrationRoutes = require('./routes/web/registrationRoutes');
+const webAttendanceRoutes = require('./routes/web/attendanceRoutes');
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use('/', webDashboardRoutes);
 app.use('/', webEventRoutes);
 app.use('/admin/events', webAdminEventRoutes);
 app.use('/', webRegistrationRoutes);
+app.use('/', webAttendanceRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

@@ -1,0 +1,16 @@
+<%
+  var badgeClass = 'badge-neutral';
+  var badgeLabel = 'Unknown';
+
+  if (attendanceStatus === 'present') {
+    badgeClass = 'badge-success';
+    badgeLabel = 'Present';
+  } else if (attendanceStatus === 'absent') {
+    badgeClass = 'badge-danger';
+    badgeLabel = 'Absent';
+  } else if (attendanceStatus === 'pending') {
+    badgeClass = 'badge-warning';
+    badgeLabel = 'Pending';
+  }
+%>
+<span class="badge <%= badgeClass %>"><%= badgeLabel %></span>

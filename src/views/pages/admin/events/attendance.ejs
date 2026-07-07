@@ -1,0 +1,129 @@
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Attendance &mdash; <%= event.title %></h1>
+      <p>Check volunteers in/out and record attendance for this event.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="/admin/events/<%= event.id %>" class="btn btn-ghost">
+        <i class="fa-solid fa-arrow-left"></i> Back to Event
+      </a>
+    </div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <p class="stat-label">Present</p>
+      <p class="stat-value"><%= stats.totalPresent %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Absent</p>
+      <p class="stat-value"><%= stats.totalAbsent %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Pending</p>
+      <p class="stat-value"><%= stats.totalPending %></p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-label">Total Hours</p>
+      <p class="stat-value"><%= stats.totalHours %></p>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (roster.length===0) { %>
+    <p class="hint">No approved volunteers for this event yet.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Volunteer</th>
+            <th>Email</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Hours</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% roster.forEach(function (row) { %>
+          <%
+            var badgeStatus = !row.attendance_status ? 'pending' : (row.attendance_status === 'attended' ? 'present' : 'absent');
+          %>
+          <tr>
+            <td><%= row.volunteer_name %></td>
+            <td><%= row.volunteer_email %></td>
+            <td>
+              <%= row.check_in_time ? formatDate(row.check_in_time) + ' ' + formatTime(row.check_in_time) : '—' %>
+            </td>
+            <td>
+              <%= row.check_out_time ? formatDate(row.check_out_time) + ' ' + formatTime(row.check_out_time) : '—' %>
+            </td>
+            <td><%= row.hours_contributed !==null ? row.hours_contributed : '—' %></td>
+            <td>
+              <%- include('../../../partials/attendanceStatusBadge', { attendanceStatus: badgeStatus }) %>
+            </td>
+            <td class="table-actions">
+              <% if (!row.attendance_status) { %>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/check-in"
+                class="inline-form"
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Check In">
+                  <i class="fa-solid fa-right-to-bracket"></i>
+                </button>
+              </form>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/mark-present"
+                class="inline-form"
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Mark Present">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              </form>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/mark-absent"
+                class="inline-form"
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Mark Absent">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </form>
+              <% } else { %> <% if (row.attendance_status==='attended' && row.check_in_time &&
+              !row.check_out_time) { %>
+              <form
+                method="POST"
+                action="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/check-out"
+                class="inline-form"
+              >
+                <button type="submit" class="btn btn-ghost btn-sm" title="Check Out">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+              </form>
+              <% } %>
+              <a
+                href="/admin/events/<%= event.id %>/attendance/<%= row.registration_id %>/edit"
+                class="btn btn-ghost btn-sm"
+                title="Edit"
+              >
+                <i class="fa-solid fa-pen"></i>
+              </a>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

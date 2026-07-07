@@ -2,6 +2,7 @@ const express = require('express');
 
 const adminEventController = require('../../controllers/web/adminEventController');
 const adminRegistrationController = require('../../controllers/web/adminRegistrationController');
+const adminAttendanceController = require('../../controllers/web/adminAttendanceController');
 const { verifyJwt } = require('../../middlewares/verifyJwt');
 const { requireRole } = require('../../middlewares/requireRole');
 const { uploadEventBanner } = require('../../middlewares/upload');
@@ -29,5 +30,13 @@ router.post('/:id/status', adminEventController.updateStatus);
 
 router.get('/:id/volunteers', adminRegistrationController.list);
 router.post('/:id/volunteers/:registrationId/remove', adminRegistrationController.remove);
+
+router.get('/:id/attendance', adminAttendanceController.list);
+router.post('/:id/attendance/:registrationId/check-in', adminAttendanceController.checkIn);
+router.post('/:id/attendance/:registrationId/check-out', adminAttendanceController.checkOut);
+router.post('/:id/attendance/:registrationId/mark-present', adminAttendanceController.markPresent);
+router.post('/:id/attendance/:registrationId/mark-absent', adminAttendanceController.markAbsent);
+router.get('/:id/attendance/:registrationId/edit', adminAttendanceController.showEditForm);
+router.post('/:id/attendance/:registrationId/edit', adminAttendanceController.update);
 
 module.exports = router;

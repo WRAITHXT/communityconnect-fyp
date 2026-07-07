@@ -59,6 +59,10 @@ async function withdraw(id, decidedBy) {
 // "My Registered Events" — every registration (active or cancelled) for
 // this user, newest event first, with enough event data to render the list
 // without a second round of queries per row.
+// attendance_status/attendance columns are added here (Phase 6 integration)
+// so the My Registered Events page can show an attendance badge per row
+// without a second query per registration. attendance_status is null when
+// no attendance record exists yet (pending).
 async function listForUser(userId) {
   const { rows } = await pool.query(
     `SELECT
@@ -69,10 +73,12 @@ async function listForUser(userId) {
        events.location,
        events.registration_deadline,
        events.status AS event_status,
-       event_categories.name AS category_name
+       event_categories.name AS category_name,
+       attendance.status AS attendance_status
      FROM event_registrations
      JOIN events ON events.id = event_registrations.event_id
      JOIN event_categories ON event_categories.id = events.category_id
+     LEFT JOIN attendance ON attendance.event_registration_id = event_registrations.id
      WHERE event_registrations.user_id = $1
      ORDER BY events.start_datetime DESC`,
     [userId]

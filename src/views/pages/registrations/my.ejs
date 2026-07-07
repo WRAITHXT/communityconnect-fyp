@@ -18,7 +18,8 @@
             <th>Event</th>
             <th>Category</th>
             <th>Date</th>
-            <th>Status</th>
+            <th>Registration</th>
+            <th>Attendance</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -30,6 +31,13 @@
             <td><%= formatDate(reg.start_datetime) %></td>
             <td>
               <%- include('../../partials/registrationStatusBadge', { regStatus: reg.status==='approved' ? 'registered' : 'cancelled' }) %>
+            </td>
+            <td>
+              <% if (reg.status==='approved' ) { %>
+              <%- include('../../partials/attendanceStatusBadge', { attendanceStatus: !reg.attendance_status ? 'pending' : (reg.attendance_status==='attended' ? 'present' : 'absent') }) %>
+              <% } else { %>
+              &mdash;
+              <% } %>
             </td>
             <td>
               <% if (reg.status==='approved' ) { %>

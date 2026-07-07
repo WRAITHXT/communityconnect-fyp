@@ -1,0 +1,52 @@
+<div class="page-header">
+  <h1>My Volunteer Hours</h1>
+  <p>Your attendance history and total hours contributed.</p>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Total Hours Contributed</h2>
+    </div>
+    <p class="dash-card-value"><%= totalHours %> hours</p>
+  </div>
+</section>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (history.length===0) { %>
+    <p class="hint">You don't have any recorded attendance yet.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Hours</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% history.forEach(function (row) { %>
+          <tr>
+            <td><%= row.title %></td>
+            <td><%= row.category_name %></td>
+            <td><%= formatDate(row.start_datetime) %></td>
+            <td><%= row.check_in_time ? formatTime(row.check_in_time) : '—' %></td>
+            <td><%= row.check_out_time ? formatTime(row.check_out_time) : '—' %></td>
+            <td><%= row.hours_contributed %></td>
+            <td>
+              <%- include('../../partials/attendanceStatusBadge', { attendanceStatus: row.status==='attended' ? 'present' : 'absent' }) %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

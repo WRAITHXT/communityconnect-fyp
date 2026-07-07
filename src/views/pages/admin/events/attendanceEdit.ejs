@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h1>Edit Attendance</h1>
+  <p><%= volunteerName %> &mdash; <%= event.title %></p>
+</div>
+
+<% if (errors && errors.length) { %>
+<div class="alert alert-danger">
+  <i class="fa-solid fa-circle-exclamation"></i>
+  <ul>
+    <% errors.forEach(function (message) { %>
+    <li><%= message %></li>
+    <% }); %>
+  </ul>
+</div>
+<% } %>
+
+<div class="card">
+  <form
+    method="POST"
+    action="/admin/events/<%= event.id %>/attendance/<%= registrationId %>/edit"
+    novalidate
+  >
+    <div class="form-group">
+      <label class="form-label" for="status">Status</label>
+      <select class="form-control" id="status" name="status" required>
+        <option value="attended" <%= values.status==='attended' ? 'selected' : '' %>>Present</option>
+        <option value="no_show" <%= values.status==='no_show' ? 'selected' : '' %>>Absent</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="checkInTime">Check-In Time</label>
+        <input
+          class="form-control"
+          type="datetime-local"
+          id="checkInTime"
+          name="checkInTime"
+          value="<%= values.checkInTime || '' %>"
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="checkOutTime">Check-Out Time</label>
+        <input
+          class="form-control"
+          type="datetime-local"
+          id="checkOutTime"
+          name="checkOutTime"
+          value="<%= values.checkOutTime || '' %>"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="hoursContributed">Hours Contributed</label>
+      <input
+        class="form-control"
+        type="number"
+        step="0.25"
+        min="0"
+        id="hoursContributed"
+        name="hoursContributed"
+        value="<%= values.hoursContributed %>"
+      />
+      <span class="form-hint"
+        >Automatically recalculated if both check-in and check-out times are set.</span
+      >
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="/admin/events/<%= event.id %>/attendance" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>

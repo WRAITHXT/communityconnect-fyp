@@ -8,8 +8,9 @@ Authentication details and how to test it: [docs/PHASE2_AUTHENTICATION.md](docs/
 Dashboard module details and how to test it: [docs/PHASE3_DASHBOARD.md](docs/PHASE3_DASHBOARD.md).
 Event Management details and how to test it: [docs/PHASE4_EVENT_MANAGEMENT.md](docs/PHASE4_EVENT_MANAGEMENT.md).
 Volunteer Registration details and how to test it: [docs/PHASE5_VOLUNTEER_REGISTRATION.md](docs/PHASE5_VOLUNTEER_REGISTRATION.md).
+Attendance Tracking details and how to test it: [docs/PHASE6_ATTENDANCE_TRACKING.md](docs/PHASE6_ATTENDANCE_TRACKING.md).
 
-**Status**: Phase 5 — Volunteer Registration implemented (register/cancel, duplicate/deadline/capacity enforcement, admin roster management, colored status badges). Attendance, Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
+**Status**: Phase 6 — Attendance Tracking implemented (check-in/out, mark present/absent, automatic hour calculation, admin corrections, attendance statistics, colored status badges). Donations, Certificates, Notifications, and Reports are not implemented yet (their dashboard/sidebar entries remain placeholders).
 
 ## Stack
 
@@ -50,13 +51,13 @@ commands.
 ```
 src/
   config/        # env.js, db.js (pg Pool), jwt.js, navigation.js (sidebar nav data, active), constants.js*
-  models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js (active)
-  services/       # authService.js, dashboardService.js, eventService.js, registrationService.js (active)
+  models/        # userModel.js, eventModel.js, eventCategoryModel.js, registrationModel.js, attendanceModel.js (active)
+  services/       # authService.js, dashboardService.js, eventService.js, registrationService.js, attendanceService.js (active)
   controllers/
-    web/           # auth/dashboard/event/adminEvent/registration/adminRegistration controllers — render EJS views
+    web/           # auth/dashboard/event/adminEvent/registration/adminRegistration/attendance/adminAttendance controllers
     api/            # empty — no active API routes right now*
   routes/
-    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js
+    web/            # authRoutes.js, dashboardRoutes.js, eventRoutes.js, adminEventRoutes.js, registrationRoutes.js, attendanceRoutes.js
     api/             # empty*
   middlewares/     # errorHandler.js, verifyJwt.js, requireRole.js, validate.js, upload.js, flash.js (all active);
                      csrf.js is still a placeholder*
@@ -64,8 +65,9 @@ src/
   views/
     layouts/         # app.ejs (sidebar+topbar shell), simple.ejs (public pages) — express-ejs-layouts
     partials/         # sidebar.ejs, topbar.ejs, breadcrumb.ejs, simpleNav.ejs, footer.ejs, flashMessage.ejs,
-                        registrationStatusBadge.ejs, dashboard/statCard.ejs, dashboard/placeholderCard.ejs
-    pages/             # auth/, dashboard/, admin/ (incl. admin/events/), events/, registrations/ (active)
+                        registrationStatusBadge.ejs, attendanceStatusBadge.ejs, dashboard/statCard.ejs,
+                        dashboard/placeholderCard.ejs
+    pages/             # auth/, dashboard/, admin/ (incl. admin/events/), events/, registrations/, attendance/ (active)
   public/
     css/               # base.css, layout.css, components.css, dashboard.css, auth.css, events.css — the design system
     js/                 # main.js (sidebar collapse, mobile drawer, user menu, greeting, delete-confirm)
@@ -74,7 +76,8 @@ src/
   utils/              # logger.js, tokenService.js, format.js, storage.js, viewHelpers.js (active); mailer/pdfGenerator/csvExporter are placeholders*
   jobs/                # scheduled tasks (node-cron) — added when needed
 database/
-  migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status update
+  migrations/           # node-pg-migrate migrations — 11 tables + updated_at trigger + registration_deadline/status
+                          update + attendance check-in/check-out columns
   seeders/               # 001-initial-seed.js (1 admin, 2 users, 3 categories)
 tests/
   unit/ integration/ e2e/
@@ -86,7 +89,8 @@ docs/
   PHASE3_DASHBOARD.md        # design system + dashboard module, design notes, full test instructions
   PHASE4_EVENT_MANAGEMENT.md  # schema change, what was built, design notes, full test instructions
   PHASE5_VOLUNTEER_REGISTRATION.md  # what was built, design notes, bugs found & fixed, full test instructions
-  API.md                              # filled in as API routes are (re-)added
+  PHASE6_ATTENDANCE_TRACKING.md       # schema change, what was built, design notes, full test instructions
+  API.md                                # filled in as API routes are (re-)added
 ```
 
 `*` — file exists as a one-line placeholder marking where the logic belongs; implemented in the phase noted in its comment (see `docs/PROJECT_BLUEPRINT.md`, Section 7 for the phase order).
@@ -187,7 +191,26 @@ docs/
   capacity enforcement, cancellation (including the deadline cutoff), remaining-slot
   recalculation, admin roster/search/remove, RBAC, and all four badge states
 
+**Phase 6 — Attendance Tracking**
+
+- Schema addition (new migration, not an edit to prior ones): `check_in_time`/`check_out_time`
+  columns on `attendance`, plus a check-out-after-check-in constraint
+- Admin: check volunteers in/out, mark Present/Absent directly, edit/correct any recorded
+  attendance, per-event statistics (Present/Absent/Pending/Total Hours)
+- Automatic hour calculation via two paths: real elapsed time on check-out, or the event's own
+  scheduled duration when marked Present directly (no live check-in/out)
+- System-enforced rules: only registered volunteers can have attendance recorded, one attendance
+  record per volunteer per event (DB-level `UNIQUE` constraint + service-level pre-checks)
+- Volunteer: attendance status shown on "My Registered Events" (integration touch), plus a new
+  "My Volunteer Hours" page (total hours + full history)
+- Three-state colored badge reusing existing badge components: Present (green), Absent (red),
+  Pending (orange)
+- Verified end-to-end: check-in, check-out with correct hour calculation, duplicate prevention,
+  the direct-mark-present event-duration calculation, admin corrections (including verifying a
+  manual hours override is correctly ignored when both timestamps are supplied), statistics, RBAC,
+  and graceful handling of invalid/non-existent ids — see `docs/PHASE6_ATTENDANCE_TRACKING.md`
+
 ## Explicitly Not Yet Implemented
 
-Attendance Tracking, Donation Recording, Certificate Generation, Notifications, Reports. These
-follow the phased roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Attendance Tracking next.
+Donation Recording, Certificate Generation, Notifications, Reports. These follow the phased
+roadmap in `docs/PROJECT_BLUEPRINT.md`, starting with Donation Recording next.

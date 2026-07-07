@@ -1,22 +1,17 @@
 const userModel = require('../models/userModel');
 const eventModel = require('../models/eventModel');
 const registrationModel = require('../models/registrationModel');
+const attendanceModel = require('../models/attendanceModel');
 
 // Icons match the sidebar entries in src/config/navigation.js for the same
 // concept, so the two stay visually tied together. Cards/stats tied to a
 // module that isn't implemented yet stay static placeholders
 // (value: '—', status: 'Coming soon') until that module lands — see
 // docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order. "Upcoming
-// Events" (user), "Total Events" (admin) since Phase 4, and "My Event
-// Registrations" (user) / "Total Volunteers" (admin) since Phase 5 are now
-// live.
+// Events" (user), "Total Events" (admin) since Phase 4, "My Event
+// Registrations" (user) / "Total Volunteers" (admin) since Phase 5, and "My
+// Volunteer Hours" (user) since Phase 6 are now live.
 const USER_DASHBOARD_CARDS = [
-  {
-    key: 'myVolunteerHours',
-    title: 'My Volunteer Hours',
-    description: 'See your accumulated, verified volunteering hours.',
-    icon: 'fa-solid fa-clock',
-  },
   {
     key: 'myDonations',
     title: 'My Donations',
@@ -40,6 +35,7 @@ const USER_DASHBOARD_CARDS = [
 async function getUserDashboardCards(userId) {
   const upcomingEventsCount = await eventModel.countUpcomingPublished();
   const myRegistrationsCount = await registrationModel.countApprovedForUser(userId);
+  const totalHours = await attendanceModel.getTotalHoursForUser(userId);
 
   const liveCards = [
     {
@@ -59,6 +55,15 @@ async function getUserDashboardCards(userId) {
       value: String(myRegistrationsCount),
       status: null,
       href: '/my-registrations',
+    },
+    {
+      key: 'myVolunteerHours',
+      title: 'My Volunteer Hours',
+      description: 'View your attendance history and total hours contributed.',
+      icon: 'fa-solid fa-clock',
+      value: String(totalHours),
+      status: null,
+      href: '/my-attendance',
     },
   ];
 
