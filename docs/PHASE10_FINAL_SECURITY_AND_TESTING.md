@@ -131,16 +131,24 @@ against scripted abuse.
 
 **Fixed**: added `express-rate-limit` (`middlewares/rateLimiter.js`):
 
-- `authLimiter` — 10 requests per 15 minutes per IP, applied to `POST /login` and `POST /register`.
-  Generous enough that a real person mistyping a password a few times is never blocked; tight
-  enough to make scripted credential stuffing impractical. Renders a graceful page, not a raw JSON
-  error, on the web routes it protects.
-- `verifyLimiter` — 30 requests per 15 minutes per IP, applied to `POST /verify-certificate`. The
+- `loginLimiter` — 10 *failed* attempts per 15 minutes per IP, applied to `POST /login`
+  (`skipSuccessfulRequests: true` — see bug #4 below for why successful logins don't count
+  against this budget). Generous enough that a real person mistyping a password a few times is
+  never blocked; tight enough to make scripted credential stuffing impractical. Renders a graceful
+  page, not a raw JSON error.
+- `registerLimiter` — 5 requests per hour per IP, applied to `POST /register`. Registration is a
+  rare, one-time action per visitor, so a much longer window than login is appropriate — this
+  still comfortably covers a user who re-submits the form a few times while remaining tight
+  against scripted account creation. (Both were originally a single shared `authLimiter` at
+  10/15min; split and `registerLimiter`'s window widened after review found the shared limit was
+  too easy for a normal user to trip during ordinary registration retries.)
+- `verifyLimiter` — 60 requests per 15 minutes per IP, applied to `POST /verify-certificate`. The
   public verification page has no account to lock out, but is still an unauthenticated,
   internet-facing endpoint that can be scripted; a looser limit than auth, just enough to blunt
-  abuse without affecting a real visitor checking a certificate.
+  abuse without affecting a real visitor checking a certificate. (Raised from an initial 30/15min
+  for the same reason.)
 
-Both were live-tested (Section 4): 11 rapid failed logins from the same IP correctly returned
+All three were live-tested (Section 4): rapid failed logins from the same IP correctly returned
 `429` starting partway through the burst, with a graceful rendered message, and the limiter is
 correctly scoped per-route (it does not affect any other endpoint).
 
@@ -337,6 +345,22 @@ categories, everything else at 0).
    populated. Re-verified: valid token → succeeds and persists; missing or tampered token → still
    correctly `403`s (proving this is a reordering fix, not a bypass); every other POST form in the
    app re-spot-checked and unaffected.
+4. **Login rate limiter counted successful logins toward the same budget as failed ones**
+   (found from runtime logs after the values in 1.9 were tuned down; fixed as a direct follow-up).
+   Root cause: `loginLimiter` runs *before* `authService.login` — there is no way to know the
+   outcome until the controller checks the password — so without extra configuration
+   `express-rate-limit` counts every `POST /login` regardless of result. A legitimate user logging
+   in and out a few times in a session was silently spending the same 10-per-15-minute budget as
+   an attacker's wrong-password guesses, and could get locked out doing nothing wrong. **Fixed**
+   by adding `skipSuccessfulRequests: true`, which uses the library's own
+   `requestWasSuccessful` check (`response.statusCode < 400`) to skip counting a request once it's
+   known to have ended in the `302` redirect to `/dashboard` — a 401 (bad credentials) or 400
+   (validation error) still counts exactly as before. Re-verified: 15 back-to-back successful
+   logins never moved `RateLimit-Remaining` off its post-first-request value; 11 back-to-back
+   failed logins still correctly blocked on the 11th with a graceful `429`; 5 successes followed
+   by 10 failures still blocked on the 11th failure (proving successes and failures are tracked
+   independently, not that the count was simply reset). Security logging (Login succeeded/failed/
+   Rate limit exceeded) confirmed unaffected throughout.
 
 No bugs were found in any previously-completed module's actual business logic (event/registration/
 attendance/donation/certificate/report flows) during this phase's re-testing — everything that

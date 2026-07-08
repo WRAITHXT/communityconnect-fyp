@@ -4,6 +4,7 @@ const registrationModel = require('../models/registrationModel');
 const attendanceModel = require('../models/attendanceModel');
 const donationModel = require('../models/donationModel');
 const certificateModel = require('../models/certificateModel');
+const { formatCurrency } = require('../utils/format');
 
 // Icons match the sidebar entries in src/config/navigation.js for the same
 // concept, so the two stay visually tied together. "Upcoming Events" (user),
@@ -58,7 +59,7 @@ async function getUserDashboardCards(userId) {
       title: 'My Donations',
       description: 'View your recorded donation history.',
       icon: 'fa-solid fa-hand-holding-heart',
-      value: totalDonated.toFixed(2),
+      value: formatCurrency(totalDonated),
       status: null,
       href: '/my-donations',
     },

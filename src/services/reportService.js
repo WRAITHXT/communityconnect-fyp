@@ -146,6 +146,11 @@ async function getVolunteerReport(query) {
 }
 
 // ---- Donation Report ----
+// Amount stays a plain number here (no "RM" prefix) — CSV/spreadsheet
+// consumers need it numeric to sum/sort, so the currency is called out in
+// its own column instead of being baked into the amount text. The on-screen
+// report page (pages/reports/donations.ejs) shows the "RM 1,150.00" format
+// via formatCurrency(); this columns array only feeds the CSV/PDF exports.
 const DONATION_REPORT_COLUMNS = [
   { key: 'donor_name', label: 'Donor' },
   { key: 'donation_type', label: 'Type' },
@@ -154,6 +159,7 @@ const DONATION_REPORT_COLUMNS = [
     label: 'Amount',
     format: (row) => (row.amount === null ? '' : Number(row.amount).toFixed(2)),
   },
+  { key: 'currency', label: 'Currency', format: (row) => (row.amount === null ? '' : 'MYR') },
   { key: 'donated_at', label: 'Date', format: (row) => formatDate(row.donated_at) },
   { key: 'status', label: 'Status' },
 ];

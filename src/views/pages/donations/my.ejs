@@ -17,7 +17,7 @@
     <div class="card-header">
       <h2 class="card-title">Total Amount Donated</h2>
     </div>
-    <p class="dash-card-value"><%= totalAmount.toFixed(2) %></p>
+    <p class="dash-card-value"><%= formatCurrency(totalAmount) %></p>
     <p class="hint">Only completed monetary donations are counted toward this total.</p>
   </div>
 </section>
@@ -58,7 +58,7 @@
           <% donations.forEach(function (d) { %>
           <tr>
             <td><%= typeLabels[d.donation_type] %></td>
-            <td><%= d.amount !==null ? Number(d.amount).toFixed(2) : '—' %></td>
+            <td><%= d.amount !==null ? formatCurrency(d.amount) : '—' %></td>
             <td><%= formatDate(d.donated_at) %></td>
             <td>
               <%- include('../../partials/donationStatusBadge', { donationStatus: d.status }) %>

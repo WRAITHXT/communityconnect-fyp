@@ -1,6 +1,6 @@
 const authService = require('../../services/authService');
 const logger = require('../../utils/logger');
-const { cookieName, cookieOptions } = require('../../config/jwt');
+const { cookieName, cookieOptions, clearCookieOptions } = require('../../config/jwt');
 
 function showRegisterForm(req, res) {
   res.render('pages/auth/register', {
@@ -69,7 +69,7 @@ function logout(req, res) {
   if (req.user) {
     logger.info(`Logout - id=${req.user.id} ip=${req.ip}`);
   }
-  res.clearCookie(cookieName, cookieOptions);
+  res.clearCookie(cookieName, clearCookieOptions);
   res.redirect('/login');
 }
 

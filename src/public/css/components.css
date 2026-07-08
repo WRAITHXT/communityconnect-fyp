@@ -329,15 +329,20 @@
 .banner-preview {
   display: block;
   margin-top: var(--space-3);
-  max-height: 120px;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
 
 .hero-image {
   width: 100%;
-  max-height: 320px;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
+  object-position: center;
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-4);
 }

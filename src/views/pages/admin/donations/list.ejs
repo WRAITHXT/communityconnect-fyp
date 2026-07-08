@@ -23,7 +23,7 @@
     </div>
     <div class="card stat-card">
       <p class="stat-label">Total Amount Received</p>
-      <p class="stat-value"><%= stats.totalAmountReceived.toFixed(2) %></p>
+      <p class="stat-value"><%= formatCurrency(stats.totalAmountReceived) %></p>
     </div>
   </div>
 </section>
@@ -45,7 +45,7 @@
           <tr>
             <td><%= typeLabels[row.donation_type] %></td>
             <td><%= row.count %></td>
-            <td><%= row.total_amount.toFixed(2) %></td>
+            <td><%= formatCurrency(row.total_amount) %></td>
           </tr>
           <% }); %>
         </tbody>
@@ -105,7 +105,7 @@
           <tr>
             <td><%= d.donor_name %></td>
             <td><%= typeLabels[d.donation_type] %></td>
-            <td><%= d.amount !==null ? Number(d.amount).toFixed(2) : '—' %></td>
+            <td><%= d.amount !==null ? formatCurrency(d.amount) : '—' %></td>
             <td><%= formatDate(d.donated_at) %></td>
             <td>
               <%- include('../../../partials/donationStatusBadge', { donationStatus: d.status }) %>

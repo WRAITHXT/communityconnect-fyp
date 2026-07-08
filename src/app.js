@@ -7,7 +7,7 @@ const expressLayouts = require('express-ejs-layouts');
 
 const logger = require('./utils/logger');
 const storage = require('./utils/storage');
-const { formatDate } = require('./utils/format');
+const { formatDate, formatCurrency } = require('./utils/format');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 const { attachCurrentUser } = require('./middlewares/verifyJwt');
 const { attachFlashFromQuery } = require('./middlewares/flash');
@@ -39,6 +39,7 @@ app.locals.getBannerUrl = storage.getPublicUrl;
 app.locals.formatDate = formatDate;
 app.locals.formatTime = (value) =>
   new Date(value).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+app.locals.formatCurrency = formatCurrency;
 
 // ---- Secure HTTP headers (Phase 10 hardening) ----
 // Every asset this app ever loads is self-hosted (Font Awesome, Chart.js,

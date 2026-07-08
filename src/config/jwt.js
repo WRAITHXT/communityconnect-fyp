@@ -6,15 +6,24 @@ const config = require('./env');
 // per the approved design in docs/PROJECT_BLUEPRINT.md, Section 9.
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
+const cookieName = 'cc_token';
+
+// res.clearCookie() only needs the attributes that identify the cookie
+// (path/domain/secure/sameSite/httpOnly) — passing maxAge is deprecated in
+// Express since clearCookie always clears by setting an immediate expiry.
+const cookieOptions = {
+  httpOnly: true,
+  secure: config.nodeEnv === 'production',
+  sameSite: 'strict',
+  maxAge: TWO_HOURS_MS,
+  path: '/',
+};
+const { maxAge, ...clearCookieOptions } = cookieOptions;
+
 module.exports = {
   secret: config.jwtSecret,
   expiresIn: config.jwtExpiresIn,
-  cookieName: 'cc_token',
-  cookieOptions: {
-    httpOnly: true,
-    secure: config.nodeEnv === 'production',
-    sameSite: 'strict',
-    maxAge: TWO_HOURS_MS,
-    path: '/',
-  },
+  cookieName,
+  cookieOptions,
+  clearCookieOptions,
 };

@@ -50,7 +50,7 @@
     </div>
     <div class="card stat-card">
       <p class="stat-label">Total Amount (Completed)</p>
-      <p class="stat-value"><%= totals.totalAmount.toFixed(2) %></p>
+      <p class="stat-value"><%= formatCurrency(totals.totalAmount) %></p>
     </div>
   </div>
 </section>
@@ -68,7 +68,7 @@
           <tr>
             <td><%= row.donation_type %></td>
             <td><%= row.count %></td>
-            <td><%= row.total_amount.toFixed(2) %></td>
+            <td><%= formatCurrency(row.total_amount) %></td>
           </tr>
           <% }); %>
         </tbody>
@@ -90,7 +90,7 @@
           <tr>
             <td><%- include('../../partials/donationStatusBadge', { donationStatus: row.status }) %></td>
             <td><%= row.count %></td>
-            <td><%= row.total_amount.toFixed(2) %></td>
+            <td><%= formatCurrency(row.total_amount) %></td>
           </tr>
           <% }); %>
         </tbody>
@@ -121,7 +121,7 @@
           <tr>
             <td><%= d.donor_name %></td>
             <td><%= d.donation_type %></td>
-            <td><%= d.amount !==null ? Number(d.amount).toFixed(2) : '—' %></td>
+            <td><%= d.amount !==null ? formatCurrency(d.amount) : '—' %></td>
             <td><%= formatDate(d.donated_at) %></td>
             <td><%- include('../../partials/donationStatusBadge', { donationStatus: d.status }) %></td>
           </tr>

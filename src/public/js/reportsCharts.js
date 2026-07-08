@@ -19,13 +19,30 @@
 
   Chart.defaults.font.family = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
-  function scales(yLabel) {
+  // CommunityConnect's one fixed currency (Malaysian Ringgit) — mirrors
+  // utils/format.js's formatCurrency() server-side; kept as its own small
+  // copy here since this file has no access to that Node module.
+  function formatRM(value) {
+    return (
+      'RM ' +
+      Number(value).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
+  }
+
+  function scales(yLabel, currency) {
     return {
       x: { grid: { display: false }, ticks: { color: TICK_COLOR } },
       y: {
         beginAtZero: true,
         grid: { color: GRID_COLOR },
-        ticks: { color: TICK_COLOR, precision: 0 },
+        ticks: {
+          color: TICK_COLOR,
+          precision: currency ? undefined : 0,
+          callback: currency ? formatRM : undefined,
+        },
         title: yLabel ? { display: true, text: yLabel, color: TICK_COLOR } : undefined,
       },
     };
@@ -62,7 +79,7 @@
     });
   }
 
-  function barChart(canvasId, labels, values, label) {
+  function barChart(canvasId, labels, values, label, currency) {
     var el = document.getElementById(canvasId);
     if (!el) return;
     // eslint-disable-next-line no-new
@@ -81,8 +98,19 @@
         ],
       },
       options: {
-        plugins: { legend: { display: false } },
-        scales: scales(),
+        plugins: {
+          legend: { display: false },
+          tooltip: currency
+            ? {
+                callbacks: {
+                  label: function (ctx) {
+                    return formatRM(ctx.parsed.y);
+                  },
+                },
+              }
+            : undefined,
+        },
+        scales: scales(undefined, currency),
       },
     });
   }
@@ -150,7 +178,8 @@
     data.donationsByType.map(function (r) {
       return r.total_amount;
     }),
-    'Amount'
+    'Amount (RM)',
+    true
   );
 
   groupedBarChart(
