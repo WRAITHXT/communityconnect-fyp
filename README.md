@@ -14,7 +14,7 @@ Certificate Generation details and how to test it: [docs/PHASE8_CERTIFICATE_GENE
 Reports & Analytics details and how to test it: [docs/PHASE9_REPORTS_ANALYTICS.md](docs/PHASE9_REPORTS_ANALYTICS.md).
 Final security/performance/testing review: [docs/PHASE10_FINAL_SECURITY_AND_TESTING.md](docs/PHASE10_FINAL_SECURITY_AND_TESTING.md).
 
-**Status**: Phase 10 — Final Security, Validation, Performance Review & System Testing complete. Every module (Authentication through Reports & Analytics) has been security-hardened (Helmet + strict CSP, CSRF protection, rate limiting, JWT algorithm pinning, security-event logging), performance-reviewed, and re-verified end-to-end. The application is feature-complete except Notifications (its dashboard/sidebar entries remain placeholders).
+**Status**: Phase 10 — Final Security, Validation, Performance Review & System Testing complete. Every module (Authentication through Reports & Analytics) has been security-hardened (Helmet + strict CSP, CSRF protection, rate limiting, JWT algorithm pinning, security-event logging), performance-reviewed, and re-verified end-to-end. The unfinished Notifications placeholder (sidebar entry, dashboard card) has been removed for the final submission — every remaining sidebar entry and dashboard card is a fully implemented, working feature.
 
 ## Stack
 
@@ -367,8 +367,12 @@ end-to-end re-verification of the whole application.
 
 ## Explicitly Not Yet Implemented
 
-Notifications. This follows the phased roadmap in `docs/PROJECT_BLUEPRINT.md`. Two smaller,
-deliberate and documented trade-offs remain (see `docs/PHASE10_FINAL_SECURITY_AND_TESTING.md`):
-logout doesn't revoke the JWT itself (only `token_version`-based "logout everywhere" would, which
-this app was never asked to build), and there's no CORS configuration (correctly unneeded for a
-same-origin, server-rendered app with no cross-origin API consumer).
+Nothing — every remaining sidebar entry and dashboard card is a complete, working feature.
+Notifications was removed entirely for the final submission (its sidebar entry and dashboard
+card, previously shown as "Coming soon" placeholders, have been deleted rather than left visibly
+unfinished); it was never implemented beyond a placeholder and has no routes, controllers, or
+views to speak of. Two smaller, deliberate and documented trade-offs remain (see
+`docs/PHASE10_FINAL_SECURITY_AND_TESTING.md`): logout doesn't revoke the JWT itself (only
+`token_version`-based "logout everywhere" would, which this app was never asked to build), and
+there's no CORS configuration (correctly unneeded for a same-origin, server-rendered app with no
+cross-origin API consumer).

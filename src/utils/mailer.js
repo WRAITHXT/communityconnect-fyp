@@ -1,2 +1,3 @@
-// Placeholder — Nodemailer adapter for verification and notification emails.
-// Implemented starting in the Authentication phase (Phase 1) and extended in Notifications (Phase 7).
+// Placeholder — Nodemailer adapter for transactional email (e.g. password
+// reset, email verification). Not implemented; no module currently sends
+// email.

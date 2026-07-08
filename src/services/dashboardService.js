@@ -6,24 +6,12 @@ const donationModel = require('../models/donationModel');
 const certificateModel = require('../models/certificateModel');
 
 // Icons match the sidebar entries in src/config/navigation.js for the same
-// concept, so the two stay visually tied together. Cards/stats tied to a
-// module that isn't implemented yet stay static placeholders
-// (value: '—', status: 'Coming soon') until that module lands — see
-// docs/PROJECT_BLUEPRINT.md, Section 7 for the phase order. "Upcoming
-// Events" (user), "Total Events" (admin) since Phase 4, "My Event
-// Registrations" (user) / "Total Volunteers" (admin) since Phase 5, "My
-// Volunteer Hours" (user) since Phase 6, "My Donations" (user) / "Total
-// Donations" (admin) since Phase 7, and "My Certificates" (user) / "Total
-// Certificates" (admin) since Phase 8 are now live.
-const USER_DASHBOARD_CARDS = [
-  {
-    key: 'notifications',
-    title: 'Notifications',
-    description: 'Stay updated on your registrations, events, and donations.',
-    icon: 'fa-solid fa-bell',
-  },
-];
-
+// concept, so the two stay visually tied together. "Upcoming Events" (user),
+// "Total Events" (admin) since Phase 4, "My Event Registrations" (user) /
+// "Total Volunteers" (admin) since Phase 5, "My Volunteer Hours" (user)
+// since Phase 6, "My Donations" (user) / "Total Donations" (admin) since
+// Phase 7, and "My Certificates" (user) / "Total Certificates" (admin)
+// since Phase 8 are all live.
 async function getUserDashboardCards(userId) {
   // Independent counts across 5 different tables — run concurrently rather
   // than sequentially (Phase 10 performance review). Each is its own
@@ -85,14 +73,7 @@ async function getUserDashboardCards(userId) {
     },
   ];
 
-  const placeholderCards = USER_DASHBOARD_CARDS.map((card) => ({
-    ...card,
-    value: '—',
-    status: 'Coming soon',
-    href: null,
-  }));
-
-  return [...liveCards, ...placeholderCards];
+  return liveCards;
 }
 
 // Total Users, Total Events, Total Volunteers, Total Donations, and Total
@@ -148,16 +129,18 @@ async function getAdminStats() {
 }
 
 // "Create Event" and "Manage Donations" are real (their modules are
-// implemented). "Manage Registrations" stays disabled since there's no
-// global cross-event registrations page (see config/navigation.js) — only
-// the per-event view under Manage Events. Note: donations are always
-// donor-submitted in this design (see docs/PHASE7_DONATION_MANAGEMENT.md)
-// — there is no admin "create donation" action, only manage/edit/delete,
-// so this quick action points at the donations list, not a create form.
-// Similarly, certificates are always generated from a specific event's
-// eligible-volunteer roster (see docs/PHASE8_CERTIFICATE_GENERATION.md),
-// not from a standalone "create certificate" form, so this quick action
-// points at the certificates list rather than a generic create page.
+// implemented). Volunteer registration management is real too, but has no
+// global cross-event page (see config/navigation.js) — it's reached
+// per-event, via a "Volunteers" button on each event's own detail page
+// (/admin/events/:id/volunteers), so there's no standalone quick-action
+// link for it here. Note: donations are always donor-submitted in this
+// design (see docs/PHASE7_DONATION_MANAGEMENT.md) — there is no admin
+// "create donation" action, only manage/edit/delete, so this quick action
+// points at the donations list, not a create form. Similarly, certificates
+// are always generated from a specific event's eligible-volunteer roster
+// (see docs/PHASE8_CERTIFICATE_GENERATION.md), not from a standalone
+// "create certificate" form, so this quick action points at the
+// certificates list rather than a generic create page.
 function getAdminQuickActions() {
   return [
     {
@@ -165,12 +148,6 @@ function getAdminQuickActions() {
       label: 'Create Event',
       icon: 'fa-solid fa-plus',
       href: '/admin/events/create',
-    },
-    {
-      key: 'manageRegistrations',
-      label: 'Manage Registrations',
-      icon: 'fa-solid fa-clipboard-list',
-      href: null,
     },
     {
       key: 'manageDonations',

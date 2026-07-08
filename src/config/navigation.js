@@ -1,8 +1,7 @@
 // Sidebar navigation structure per role, shared by the app-shell layout
 // across every module. Items with href: null render as disabled,
-// "Coming soon" entries — they preview where each future module
-// (Notifications) will live in the sidebar without linking anywhere until
-// that module exists.
+// "Coming soon" entries — they preview where a future module will live in
+// the sidebar without linking anywhere until that module exists.
 
 const userNavItems = [
   { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/dashboard' },
@@ -31,7 +30,6 @@ const userNavItems = [
     icon: 'fa-solid fa-award',
     href: '/my-certificates',
   },
-  { key: 'notifications', label: 'Notifications', icon: 'fa-solid fa-bell', href: null },
 ];
 
 const adminNavItems = [
@@ -41,17 +39,6 @@ const adminNavItems = [
     label: 'Manage Events',
     icon: 'fa-solid fa-calendar-days',
     href: '/admin/events',
-  },
-  // No global cross-event registrations page exists — volunteer
-  // registrations are managed per-event, via a "Volunteers" button on each
-  // event's own detail page (/admin/events/:id/volunteers). Left as a
-  // disabled placeholder here until/unless a global view is built later
-  // (e.g. as part of Reports).
-  {
-    key: 'registrations',
-    label: 'Volunteer Registrations',
-    icon: 'fa-solid fa-clipboard-list',
-    href: null,
   },
   {
     key: 'donations',
@@ -71,7 +58,6 @@ const adminNavItems = [
     icon: 'fa-solid fa-chart-line',
     href: '/admin/reports',
   },
-  { key: 'users', label: 'Manage Users', icon: 'fa-solid fa-users', href: null },
 ];
 
 function getNavItems(role) {
