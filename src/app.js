@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const expressLayouts = require('express-ejs-layouts');
 
-const config = require('./config/env');
 const logger = require('./utils/logger');
 const storage = require('./utils/storage');
 const { formatDate } = require('./utils/format');
@@ -109,10 +108,9 @@ app.use(attachFlashFromQuery);
 app.use(attachCsrfToken);
 app.use(doubleCsrfProtection);
 
-// Temporary landing route — replaced by the proper MVC routing structure
-// (src/routes) once more modules are implemented.
+// Public landing page.
 app.get('/', (req, res) => {
-  res.render('pages/index', { title: 'CommunityConnect', env: config.nodeEnv });
+  res.render('pages/index', { title: 'CommunityConnect' });
 });
 
 app.use('/', webAuthRoutes);

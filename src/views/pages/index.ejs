@@ -1,9 +1,110 @@
-<main class="public-page">
-  <div class="hero">
+<main>
+  <section class="home-hero">
+    <div class="home-hero-icon"><i class="fa-solid fa-hands-holding-circle"></i></div>
     <h1>CommunityConnect</h1>
-    <p class="hint">Environment: <strong><%= env %></strong></p>
-    <p class="hint">
-      Authentication and Dashboard modules are implemented — other business features are not yet.
+    <p class="home-tagline">Bringing Communities Together Through Service</p>
+    <p class="home-description">
+      CommunityConnect is a cloud-based platform for managing community events, volunteers,
+      donations, attendance, and certificates — giving organizations and volunteers one place to
+      coordinate, track, and celebrate community service.
     </p>
-  </div>
+    <div class="home-cta">
+      <% if (currentUser) { %>
+      <a href="/dashboard" class="btn btn-primary"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a href="/verify-certificate" class="btn btn-secondary">
+        <i class="fa-solid fa-award"></i> Verify Certificate
+      </a>
+      <% } else { %>
+      <a href="/login" class="btn btn-primary">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Log In
+      </a>
+      <a href="/register" class="btn btn-secondary">
+        <i class="fa-solid fa-user-plus"></i> Register
+      </a>
+      <a href="/verify-certificate" class="btn btn-ghost">
+        <i class="fa-solid fa-award"></i> Verify Certificate
+      </a>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="home-section-header">
+      <h2>Everything a Community Program Needs</h2>
+      <p>One platform covering the full lifecycle of an event — from publishing it to certifying
+        the volunteers who showed up.</p>
+    </div>
+    <div class="home-features-grid">
+      <div class="card home-feature-card">
+        <div class="home-feature-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h3 class="card-title">Event Management</h3>
+        <p>Create, publish, and manage community events with categories, schedules, locations,
+          and volunteer capacity limits.</p>
+      </div>
+      <div class="card home-feature-card">
+        <div class="home-feature-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <h3 class="card-title">Volunteer Registration</h3>
+        <p>Volunteers browse published events and register in one click, with automatic capacity
+          and deadline enforcement.</p>
+      </div>
+      <div class="card home-feature-card">
+        <div class="home-feature-icon"><i class="fa-solid fa-clock"></i></div>
+        <h3 class="card-title">Attendance Tracking</h3>
+        <p>Check volunteers in and out — or mark attendance directly — with volunteer hours
+          calculated automatically.</p>
+      </div>
+      <div class="card home-feature-card">
+        <div class="home-feature-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+        <h3 class="card-title">Donation Management</h3>
+        <p>Record monetary and in-kind donations, track their status, and see totals broken down
+          by type.</p>
+      </div>
+      <div class="card home-feature-card">
+        <div class="home-feature-icon"><i class="fa-solid fa-award"></i></div>
+        <h3 class="card-title">Certificate Generation &amp; Verification</h3>
+        <p>Automatically generate a verifiable digital certificate for every volunteer who
+          completed their service.</p>
+      </div>
+      <div class="card home-feature-card">
+        <div class="home-feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h3 class="card-title">Reports &amp; Analytics</h3>
+        <p>Live platform statistics, charts, and exportable reports across events, volunteers,
+          donations, and certificates.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-benefits-section">
+    <div class="home-section">
+      <div class="home-section-header">
+        <h2>Why CommunityConnect</h2>
+      </div>
+      <div class="home-benefits-grid">
+        <div class="home-benefit-item">
+          <div class="home-benefit-icon"><i class="fa-solid fa-cloud"></i></div>
+          <span class="home-benefit-text">Cloud-based platform</span>
+        </div>
+        <div class="home-benefit-item">
+          <div class="home-benefit-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <span class="home-benefit-text">Secure authentication</span>
+        </div>
+        <div class="home-benefit-item">
+          <div class="home-benefit-icon"><i class="fa-solid fa-people-group"></i></div>
+          <span class="home-benefit-text">Digital volunteer management</span>
+        </div>
+        <div class="home-benefit-item">
+          <div class="home-benefit-icon"><i class="fa-solid fa-receipt"></i></div>
+          <span class="home-benefit-text">Transparent donation tracking</span>
+        </div>
+        <div class="home-benefit-item">
+          <div class="home-benefit-icon"><i class="fa-solid fa-award"></i></div>
+          <span class="home-benefit-text">Digital certificates</span>
+        </div>
+        <div class="home-benefit-item">
+          <div class="home-benefit-icon"><i class="fa-solid fa-chart-pie"></i></div>
+          <span class="home-benefit-text">Analytics &amp; reporting</span>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
