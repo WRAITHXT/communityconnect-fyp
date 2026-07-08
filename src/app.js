@@ -98,6 +98,14 @@ app.use(attachFlashFromQuery);
 // OPTIONS requests (its default), so GET navigation is unaffected. Both are
 // registered after body-parsing/cookies (needs req.body/req.cookies) and
 // after express.static (asset requests never reach here at all).
+//
+// One exception: doubleCsrfProtection is configured to skip
+// multipart/form-data requests (the event banner-upload form) — that
+// content type is never parsed by express.json/express.urlencoded above, so
+// req.body._csrf would always be empty here regardless of what the form
+// actually sent. Those routes verify CSRF themselves, after their own
+// multer middleware has run — see verifyCsrfAfterUpload in
+// middlewares/csrf.js and its use in routes/web/adminEventRoutes.js.
 app.use(attachCsrfToken);
 app.use(doubleCsrfProtection);
 

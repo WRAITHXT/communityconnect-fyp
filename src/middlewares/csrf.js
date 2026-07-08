@@ -12,18 +12,28 @@ const { cookieName: jwtCookieName } = require('../config/jwt');
 // previously-issued CSRF token. Anonymous requests (the login/register
 // forms themselves, before a JWT exists) share a fixed identifier — there is
 // no per-user state to protect on those routes yet.
-const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
-  getSecret: () => config.csrfSecret,
-  getSessionIdentifier: (req) => req.cookies?.[jwtCookieName] || 'anonymous',
-  cookieName: config.nodeEnv === 'production' ? '__Host-cc.csrf-token' : 'cc.csrf-token',
-  cookieOptions: {
-    sameSite: 'strict',
-    secure: config.nodeEnv === 'production',
-    httpOnly: true,
-    path: '/',
-  },
-  getCsrfTokenFromRequest: (req) => req.body && req.body._csrf,
-});
+const { doubleCsrfProtection, generateCsrfToken, validateRequest, invalidCsrfTokenError } =
+  doubleCsrf({
+    getSecret: () => config.csrfSecret,
+    getSessionIdentifier: (req) => req.cookies?.[jwtCookieName] || 'anonymous',
+    cookieName: config.nodeEnv === 'production' ? '__Host-cc.csrf-token' : 'cc.csrf-token',
+    cookieOptions: {
+      sameSite: 'strict',
+      secure: config.nodeEnv === 'production',
+      httpOnly: true,
+      path: '/',
+    },
+    getCsrfTokenFromRequest: (req) => req.body && req.body._csrf,
+    // multipart/form-data requests (the event banner-upload form) can never
+    // be validated here: express.json/express.urlencoded never populate
+    // req.body for that content type, only multer does, and multer runs as
+    // route-specific middleware *after* this global one — so req.body._csrf
+    // is always empty at this point regardless of what the form actually
+    // submitted. Those requests are re-validated by verifyCsrfAfterUpload,
+    // applied after multer, at the two routes that need it (see
+    // routes/web/adminEventRoutes.js).
+    skipCsrfProtection: (req) => Boolean(req.is('multipart/form-data')),
+  });
 
 // Makes the token available to every EJS render() call as `csrfToken`,
 // the same "available everywhere without every controller passing it"
@@ -31,6 +41,14 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
 // needs it, and generating it is cheap.
 function attachCsrfToken(req, res, next) {
   res.locals.csrfToken = generateCsrfToken(req, res);
+  next();
+}
+
+// For the multipart/form-data routes the global doubleCsrfProtection above
+// deliberately skips (see skipCsrfProtection). Must be applied after the
+// route's own multer middleware, once req.body._csrf actually exists.
+function verifyCsrfAfterUpload(req, res, next) {
+  if (!validateRequest(req)) return next(invalidCsrfTokenError);
   next();
 }
 
@@ -50,4 +68,4 @@ function handleCsrfError(err, req, res, next) {
   });
 }
 
-module.exports = { doubleCsrfProtection, attachCsrfToken, handleCsrfError };
+module.exports = { doubleCsrfProtection, attachCsrfToken, verifyCsrfAfterUpload, handleCsrfError };

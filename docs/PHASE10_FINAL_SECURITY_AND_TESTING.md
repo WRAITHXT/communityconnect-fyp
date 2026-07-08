@@ -322,6 +322,21 @@ categories, everything else at 0).
    rate limiting, missing security logging, the one inline-style UI inconsistency, the missing
    index, the sequential dashboard queries) were gaps found by the review, not runtime bugs — each
    is listed under its own checklist item above with what was changed.
+3. **Create/Edit Event failed CSRF validation unconditionally** (found during manual testing
+   immediately after this phase, fixed as a direct follow-up). Root cause: the event form is the
+   only one in the app using `enctype="multipart/form-data"` (for the banner upload), and
+   `express.json`/`express.urlencoded` never parse that content type — only the route-specific
+   `multer` middleware does, which runs *after* the global `doubleCsrfProtection` in the chain. So
+   `req.body._csrf` was always empty by the time the global CSRF check ran, regardless of what the
+   form actually submitted, and every multipart POST was rejected unconditionally. **Fixed** by
+   configuring `skipCsrfProtection: (req) => Boolean(req.is('multipart/form-data'))` on the global
+   middleware (it can never validate that content type correctly, so it defers instead of failing),
+   and adding a new `verifyCsrfAfterUpload` middleware (using the library's `validateRequest`
+   utility) applied in `adminEventRoutes.js` immediately after `uploadEventBanner` on both the
+   create and update routes — by that point `multer` has parsed the body and `req.body._csrf` is
+   populated. Re-verified: valid token → succeeds and persists; missing or tampered token → still
+   correctly `403`s (proving this is a reordering fix, not a bypass); every other POST form in the
+   app re-spot-checked and unaffected.
 
 No bugs were found in any previously-completed module's actual business logic (event/registration/
 attendance/donation/certificate/report flows) during this phase's re-testing — everything that
