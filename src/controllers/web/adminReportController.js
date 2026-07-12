@@ -3,6 +3,7 @@ const donationService = require('../../services/donationService');
 const csvExporter = require('../../utils/csvExporter');
 const pdfGenerator = require('../../utils/pdfGenerator');
 const { getAppShellLocals } = require('../../utils/viewHelpers');
+const { formatCurrency } = require('../../utils/format');
 
 const BREADCRUMB_ROOT = [
   { label: 'Dashboard', href: '/admin/dashboard' },
@@ -128,7 +129,20 @@ function makeCsvExport(getReport, filename) {
   };
 }
 
-function makePdfExport(getReport, filename, title) {
+// Sums a numeric row field across the report's own already-fetched rows —
+// display-only aggregation for the PDF's summary band (mirrors an "autosum"
+// footer row in a spreadsheet). Never re-queries or re-filters anything, so
+// it can't drift from what the table/CSV already show.
+function sum(rows, key) {
+  return rows.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+}
+
+// `pdfExtras(report)` returns the PDF-only presentation options
+// (`summary`/`currencyColumns`/`enumColumns`) for a given report — kept out
+// of pdfGenerator.js (a generic renderer) and out of reportService.js (whose
+// `columns`/`rows` are shared verbatim with the CSV export and must stay
+// exactly as they are).
+function makePdfExport(getReport, filename, title, pdfExtras = () => ({})) {
   return async (req, res, next) => {
     try {
       const report = await getReport(req.query);
@@ -138,6 +152,8 @@ function makePdfExport(getReport, filename, title) {
         subtitle: describeFilters(report.filters),
         columns: report.columns,
         rows: report.rows,
+        generatedBy: req.user.name,
+        ...pdfExtras(report),
       });
     } catch (err) {
       next(err);
@@ -152,23 +168,57 @@ module.exports = {
   donationReport,
   certificateReport,
   exportEventCsv: makeCsvExport(reportService.getEventReport, 'event-report.csv'),
-  exportEventPdf: makePdfExport(reportService.getEventReport, 'event-report.pdf', 'Event Report'),
+  exportEventPdf: makePdfExport(
+    reportService.getEventReport,
+    'event-report.pdf',
+    'Event Report',
+    (report) => ({
+      enumColumns: ['status'],
+      summary: [
+        { label: 'Total Events', value: String(report.rows.length) },
+        { label: 'Total Registrations', value: String(sum(report.rows, 'total_registrations')) },
+        { label: 'Total Attendance', value: String(sum(report.rows, 'total_attendance')) },
+      ],
+    })
+  ),
   exportVolunteerCsv: makeCsvExport(reportService.getVolunteerReport, 'volunteer-report.csv'),
   exportVolunteerPdf: makePdfExport(
     reportService.getVolunteerReport,
     'volunteer-report.pdf',
-    'Volunteer Report'
+    'Volunteer Report',
+    (report) => ({
+      summary: [
+        { label: 'Total Volunteers', value: String(report.rows.length) },
+        { label: 'Total Hours', value: sum(report.rows, 'total_hours').toFixed(2) },
+        { label: 'Certificates Earned', value: String(sum(report.rows, 'certificates_earned')) },
+      ],
+    })
   ),
   exportDonationCsv: makeCsvExport(reportService.getDonationReport, 'donation-report.csv'),
   exportDonationPdf: makePdfExport(
     reportService.getDonationReport,
     'donation-report.pdf',
-    'Donation Report'
+    'Donation Report',
+    (report) => ({
+      enumColumns: ['donation_type', 'status'],
+      currencyColumns: ['amount'],
+      summary: [
+        { label: 'Total Donations', value: String(report.totals.count) },
+        { label: 'Total Amount (Completed)', value: formatCurrency(report.totals.totalAmount) },
+      ],
+    })
   ),
   exportCertificateCsv: makeCsvExport(reportService.getCertificateReport, 'certificate-report.csv'),
   exportCertificatePdf: makePdfExport(
     reportService.getCertificateReport,
     'certificate-report.pdf',
-    'Certificate Report'
+    'Certificate Report',
+    (report) => ({
+      enumColumns: ['status'],
+      summary: [
+        { label: 'Certificates Generated', value: String(report.stats.generated) },
+        { label: 'Revoked', value: String(report.stats.revoked) },
+      ],
+    })
   ),
 };

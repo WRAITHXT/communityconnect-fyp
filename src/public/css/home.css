@@ -101,6 +101,15 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+/* This is the last section before the site footer — its own bottom padding
+   stacked on top of .site-footer's padding left an oversized gap between
+   the benefits grid and the footer text, so it's trimmed here specifically
+   rather than in the shared .home-section rule (which the features section
+   above still uses at full size). */
+.home-benefits-section .home-section {
+  padding-bottom: var(--space-5);
+}
+
 .home-benefits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

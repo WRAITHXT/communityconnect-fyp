@@ -27,6 +27,19 @@ const webAdminReportRoutes = require('./routes/web/adminReportRoutes');
 
 const app = express();
 
+// Render (and platforms like it) sit exactly one reverse proxy hop in front
+// of this app, terminating TLS there and forwarding plain HTTP with an
+// X-Forwarded-For header. Trusting exactly 1 hop makes req.ip resolve to the
+// real client IP instead of the proxy's — express-rate-limit's key generator
+// requires this: with the default `trust proxy: false`, it throws
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR on every request once it sees that
+// header, which would 500 every login/register/verify-certificate request in
+// production. `true` (trust all hops) is deliberately avoided — it lets a
+// client spoof its own X-Forwarded-For and trivially bypass IP-based rate
+// limiting (express-rate-limit flags that case too, as
+// ERR_ERL_PERMISSIVE_TRUST_PROXY).
+app.set('trust proxy', 1);
+
 // ---- View engine (EJS + shared layout) ----
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

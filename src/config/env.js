@@ -12,6 +12,11 @@ const config = {
   csrfSecret: process.env.CSRF_SECRET,
 
   logLevel: process.env.LOG_LEVEL || 'info',
+
+  // Render sets this automatically on every instance — used to skip
+  // filesystem-dependent behavior that doesn't survive Render's ephemeral,
+  // per-instance disk (see utils/logger.js).
+  isRender: Boolean(process.env.RENDER),
 };
 
 // Fail fast at boot rather than at the first request that needs one of

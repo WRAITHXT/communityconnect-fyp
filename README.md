@@ -13,6 +13,7 @@ Donation Management details and how to test it: [docs/PHASE7_DONATION_MANAGEMENT
 Certificate Generation details and how to test it: [docs/PHASE8_CERTIFICATE_GENERATION.md](docs/PHASE8_CERTIFICATE_GENERATION.md).
 Reports & Analytics details and how to test it: [docs/PHASE9_REPORTS_ANALYTICS.md](docs/PHASE9_REPORTS_ANALYTICS.md).
 Final security/performance/testing review: [docs/PHASE10_FINAL_SECURITY_AND_TESTING.md](docs/PHASE10_FINAL_SECURITY_AND_TESTING.md).
+Deploying to Render (required env vars, database SSL, file-upload limitations): [docs/DEPLOYMENT_RENDER.md](docs/DEPLOYMENT_RENDER.md).
 
 **Status**: Phase 10 — Final Security, Validation, Performance Review & System Testing complete. Every module (Authentication through Reports & Analytics) has been security-hardened (Helmet + strict CSP, CSRF protection, rate limiting, JWT algorithm pinning, security-event logging), performance-reviewed, and re-verified end-to-end. The unfinished Notifications placeholder (sidebar entry, dashboard card) has been removed for the final submission — every remaining sidebar entry and dashboard card is a fully implemented, working feature.
 
