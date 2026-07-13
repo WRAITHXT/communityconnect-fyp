@@ -1,4 +1,5 @@
 const donationModel = require('../models/donationModel');
+const notificationService = require('./notificationService');
 
 class DonationError extends Error {
   constructor(code, message) {
@@ -77,7 +78,14 @@ async function updateDonation(id, body) {
     throw new DonationError('INVALID_STATUS', 'Please select a valid status.');
   }
 
-  return donationModel.update(id, { ...fields, status: body.status });
+  const updated = await donationModel.update(id, { ...fields, status: body.status });
+  // Only notify when the status actually changed — re-saving an edit that
+  // keeps the same status (e.g. correcting the description) isn't a status
+  // update from the donor's point of view.
+  if (existing.status !== body.status) {
+    await notificationService.notifyDonationStatusUpdated(existing.donor_id, body.status, id);
+  }
+  return updated;
 }
 
 async function deleteDonation(id) {

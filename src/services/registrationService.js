@@ -1,5 +1,6 @@
 const registrationModel = require('../models/registrationModel');
 const eventModel = require('../models/eventModel');
+const notificationService = require('./notificationService');
 
 class RegistrationError extends Error {
   constructor(code, message) {
@@ -38,10 +39,14 @@ async function registerForEvent(eventId, userId) {
   }
 
   if (existing && existing.status === 'withdrawn') {
-    return registrationModel.reactivate(existing.id);
+    const reactivated = await registrationModel.reactivate(existing.id);
+    await notificationService.notifyRegistrationSuccess(userId, event.title, event.id);
+    return reactivated;
   }
 
-  return registrationModel.create(eventId, userId);
+  const registration = await registrationModel.create(eventId, userId);
+  await notificationService.notifyRegistrationSuccess(userId, event.title, event.id);
+  return registration;
 }
 
 // Volunteer-initiated cancellation — only allowed on their own active

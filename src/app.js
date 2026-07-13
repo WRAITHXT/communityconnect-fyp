@@ -12,6 +12,7 @@ const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 const { attachCurrentUser } = require('./middlewares/verifyJwt');
 const { attachFlashFromQuery } = require('./middlewares/flash');
 const { attachCsrfToken, doubleCsrfProtection, handleCsrfError } = require('./middlewares/csrf');
+const { attachUnreadNotificationCount } = require('./middlewares/attachNotifications');
 const webAuthRoutes = require('./routes/web/authRoutes');
 const webDashboardRoutes = require('./routes/web/dashboardRoutes');
 const webEventRoutes = require('./routes/web/eventRoutes');
@@ -24,6 +25,7 @@ const webCertificateRoutes = require('./routes/web/certificateRoutes');
 const webAdminCertificateRoutes = require('./routes/web/adminCertificateRoutes');
 const webCertificateVerifyRoutes = require('./routes/web/certificateVerifyRoutes');
 const webAdminReportRoutes = require('./routes/web/adminReportRoutes');
+const webNotificationRoutes = require('./routes/web/notificationRoutes');
 
 const app = express();
 
@@ -103,6 +105,9 @@ app.use(
 // this ran, res.locals.currentUser would never be set and rendering that
 // very error page would itself throw, turning a clean 403 into a raw 500.
 app.use(attachCurrentUser);
+// Sidebar unread-notification badge — must run after attachCurrentUser
+// (needs req.user). See middlewares/attachNotifications.js.
+app.use(attachUnreadNotificationCount);
 app.use(attachFlashFromQuery);
 
 // ---- CSRF (Phase 10 hardening) ----
@@ -146,6 +151,7 @@ app.use('/admin/donations', webAdminDonationRoutes);
 app.use('/', webCertificateRoutes);
 app.use('/admin/certificates', webAdminCertificateRoutes);
 app.use('/admin/reports', webAdminReportRoutes);
+app.use('/', webNotificationRoutes);
 
 // ---- Centralized error handling (must be registered last) ----
 app.use(notFoundHandler);

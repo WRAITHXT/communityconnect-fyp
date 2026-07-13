@@ -1,0 +1,68 @@
+<%
+  var unreadCount = notifications.filter(function (n) { return !n.is_read; }).length;
+%>
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1>Notifications</h1>
+      <p>Updates from your registrations, attendance, donations, and certificates.</p>
+    </div>
+    <% if (unreadCount > 0) { %>
+    <div class="page-header-actions">
+      <form method="POST" action="/notifications/mark-all-read" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" class="btn btn-secondary">
+          <i class="fa-solid fa-check-double"></i> Mark All as Read
+        </button>
+      </form>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="card">
+    <% if (notifications.length===0) { %>
+    <p class="hint">You don't have any notifications yet.</p>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% notifications.forEach(function (n) { %>
+          <tr>
+            <td><%= n.title %></td>
+            <td><%= n.message %></td>
+            <td><%= formatDate(n.created_at) %> at <%= formatTime(n.created_at) %></td>
+            <td>
+              <%- include('../../partials/notificationStatusBadge', { isRead: n.is_read }) %>
+            </td>
+            <td class="table-actions">
+              <% if (n.target_url) { %>
+              <a href="<%= n.target_url %>" class="btn btn-ghost btn-sm" title="View">
+                <i class="fa-solid fa-eye"></i> View
+              </a>
+              <% } %>
+              <% if (!n.is_read) { %>
+              <form method="POST" action="/notifications/<%= n.id %>/read" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button type="submit" class="btn btn-ghost btn-sm">Mark as Read</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</section>

@@ -6,6 +6,12 @@
 const userNavItems = [
   { key: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge', href: '/dashboard' },
   {
+    key: 'notifications',
+    label: 'Notifications',
+    icon: 'fa-solid fa-bell',
+    href: '/notifications',
+  },
+  {
     key: 'events',
     label: 'Upcoming Events',
     icon: 'fa-solid fa-calendar-days',

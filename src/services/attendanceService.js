@@ -1,6 +1,7 @@
 const attendanceModel = require('../models/attendanceModel');
 const registrationModel = require('../models/registrationModel');
 const eventModel = require('../models/eventModel');
+const notificationService = require('./notificationService');
 
 const UNIQUE_VIOLATION = '23505';
 const VALID_STATUSES = ['attended', 'no_show'];
@@ -43,11 +44,17 @@ async function assertNotAlreadyRecorded(eventRegistrationId) {
 }
 
 async function checkIn(eventRegistrationId, adminId) {
-  await assertActiveRegistration(eventRegistrationId);
+  const registration = await assertActiveRegistration(eventRegistrationId);
   await assertNotAlreadyRecorded(eventRegistrationId);
+  // Fetched before the write (same order markPresent already uses below) so
+  // that if this read ever fails, checkIn fails cleanly with nothing
+  // written — not after an attendance row already exists.
+  const event = await eventModel.findById(registration.event_id);
 
   try {
-    return await attendanceModel.checkIn(eventRegistrationId, adminId);
+    const attendance = await attendanceModel.checkIn(eventRegistrationId, adminId);
+    await notificationService.notifyAttendanceRecorded(registration.user_id, event.title);
+    return attendance;
   } catch (err) {
     // Safety net for a race between the check above and the insert — the
     // attendance table's UNIQUE(event_registration_id) constraint is the
@@ -92,7 +99,9 @@ async function markPresent(eventRegistrationId, adminId) {
   const hours = computeHours(event.start_datetime, event.end_datetime);
 
   try {
-    return await attendanceModel.markPresent(eventRegistrationId, hours, adminId);
+    const attendance = await attendanceModel.markPresent(eventRegistrationId, hours, adminId);
+    await notificationService.notifyAttendanceRecorded(registration.user_id, event.title);
+    return attendance;
   } catch (err) {
     if (err.code === UNIQUE_VIOLATION) {
       throw new AttendanceError(

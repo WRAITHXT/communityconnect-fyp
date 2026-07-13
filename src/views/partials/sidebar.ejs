@@ -25,6 +25,9 @@
         >
           <i class="<%= item.icon %>"></i>
           <span class="nav-link-text"><%= item.label %></span>
+          <% if (item.key === 'notifications' && unreadNotificationCount > 0) { %>
+          <span class="badge badge-danger nav-link-badge"><%= unreadNotificationCount %></span>
+          <% } %>
         </a>
         <% } else { %>
         <span class="nav-link is-disabled" title="Coming soon">

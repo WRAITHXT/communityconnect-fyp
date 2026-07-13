@@ -4,6 +4,7 @@ const certificateModel = require('../models/certificateModel');
 const registrationModel = require('../models/registrationModel');
 const attendanceModel = require('../models/attendanceModel');
 const verificationLogModel = require('../models/verificationLogModel');
+const notificationService = require('./notificationService');
 
 const UNIQUE_VIOLATION = '23505';
 const MAX_CODE_ATTEMPTS = 5;
@@ -74,7 +75,7 @@ async function generateCertificate(registrationId, adminId) {
 
   for (let attempt = 0; attempt < MAX_CODE_ATTEMPTS; attempt += 1) {
     try {
-      return await certificateModel.create({
+      const certificate = await certificateModel.create({
         userId: registration.user_id,
         eventId: registration.event_id,
         certificateNumber: generateCertificateNumber(),
@@ -82,6 +83,8 @@ async function generateCertificate(registrationId, adminId) {
         totalHours: attendance.hours_contributed,
         generatedBy: adminId,
       });
+      await notificationService.notifyCertificateGenerated(registration.user_id, certificate.id);
+      return certificate;
     } catch (err) {
       if (err.code === UNIQUE_VIOLATION && err.constraint === 'certificates_user_event_unique') {
         throw new CertificateError(
