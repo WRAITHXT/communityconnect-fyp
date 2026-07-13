@@ -1,9 +1,12 @@
 // Seed data scope (per Phase 1 instructions): one admin account, two user
-// accounts, three event categories. No events, registrations, donations, or
-// certificates yet — those arrive with their respective feature phases.
+// accounts, a default set of event categories broad enough to cover almost
+// any community event. No events, registrations, donations, or certificates
+// yet — those arrive with their respective feature phases.
 //
 // Idempotent: safe to run more than once (ON CONFLICT DO NOTHING on the
-// unique columns already enforced by the schema).
+// unique columns already enforced by the schema) — re-running this after
+// adding categories only inserts the new names and leaves the existing
+// rows (and their ids) untouched, so events referencing them are unaffected.
 
 const bcrypt = require('bcrypt');
 const pool = require('../../src/config/db');
@@ -42,7 +45,19 @@ async function seed() {
     );
   }
 
-  const categories = ['Cleanup Drive', 'Fundraiser', 'Awareness Campaign'];
+  const categories = [
+    'Awareness Campaign',
+    'Cleanup Drive',
+    'Fundraiser',
+    'Community Service',
+    'Education',
+    'Health',
+    'Environmental',
+    'Food Distribution',
+    'Disaster Relief',
+    'Volunteer Training',
+    'Other',
+  ];
 
   for (const name of categories) {
     await pool.query(
@@ -51,7 +66,7 @@ async function seed() {
     );
   }
 
-  logger.info('Seed complete: 1 admin, 2 users, 3 event categories.');
+  logger.info(`Seed complete: 1 admin, 2 users, ${categories.length} event categories.`);
   logger.info(`All seeded accounts share the password: ${SEED_PASSWORD} (change before real use).`);
 }
 
